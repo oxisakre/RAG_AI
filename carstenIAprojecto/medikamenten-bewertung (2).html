@@ -1,0 +1,1352 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sanoanimal — Medikamenten-Bewertung Equiden</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Source+Sans+3:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sa-dark: #1a2e1a;
+  --sa-green: #2d4a2d;
+  --sa-green-mid: #3d6b3d;
+  --sa-green-light: #4a8a4a;
+  --sa-green-pale: #e8f0e8;
+  --sa-gold: #E8C96A;
+  --sa-gold-dim: #c4a84e;
+  --sa-gold-glow: rgba(232,201,106,0.15);
+  --sa-cream: #f5f0e4;
+  --sa-cream-dark: #e8e0cc;
+  --sa-text: #1a1a1a;
+  --sa-text-mid: #4a4a4a;
+  --sa-text-light: #7a7a7a;
+  --sa-white: #ffffff;
+  --sa-red: #c0392b;
+  --sa-red-pale: #fdf2f1;
+  --sa-orange: #e67e22;
+  --sa-orange-pale: #fef6ee;
+  --sa-blue: #2980b9;
+  --sa-blue-pale: #eef5fa;
+  --radius: 14px;
+  --radius-sm: 10px;
+  --radius-xs: 6px;
+  --shadow: 0 1px 4px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+  --shadow-lg: 0 8px 40px rgba(0,0,0,0.1);
+  --shadow-hover: 0 4px 20px rgba(0,0,0,0.08);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Source Sans 3', -apple-system, sans-serif;
+  background: var(--sa-cream);
+  color: var(--sa-text);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ════════ HEADER ════════ */
+.header {
+  background: linear-gradient(160deg, var(--sa-dark) 0%, var(--sa-green) 50%, var(--sa-green-mid) 100%);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.2);
+}
+
+.header-inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 14px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.logo-area { display: flex; align-items: center; gap: 14px; }
+
+.logo-mark {
+  width: 40px; height: 40px;
+  background: var(--sa-gold);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Playfair Display', serif;
+  font-size: 20px; font-weight: 700;
+  color: var(--sa-dark);
+  box-shadow: 0 2px 8px rgba(232,201,106,0.35);
+}
+
+.logo-text { display: flex; flex-direction: column; }
+.logo-brand { font-family: 'Playfair Display', serif; font-size: 19px; font-weight: 700; color: var(--sa-cream); }
+.logo-sub { font-size: 10.5px; color: var(--sa-gold); text-transform: uppercase; letter-spacing: 2.5px; font-weight: 500; margin-top: 1px; }
+
+.header-stats {
+  display: flex; gap: 24px; align-items: center;
+}
+
+.h-stat {
+  text-align: center;
+  padding: 0 12px;
+  border-right: 1px solid rgba(255,255,255,0.1);
+}
+
+.h-stat:last-child { border-right: none; }
+.h-stat-num { font-size: 20px; font-weight: 700; color: var(--sa-gold); font-family: 'Playfair Display', serif; }
+.h-stat-label { font-size: 10px; color: rgba(255,255,255,0.55); text-transform: uppercase; letter-spacing: 1.5px; margin-top: 1px; }
+
+/* ════════ TOOLBAR ════════ */
+.toolbar {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 20px 32px 0;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.search-wrap {
+  flex: 1;
+  min-width: 260px;
+  position: relative;
+}
+
+.search-input {
+  width: 100%;
+  padding: 12px 16px 12px 44px;
+  border: 2px solid var(--sa-cream-dark);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-family: 'Source Sans 3', sans-serif;
+  background: var(--sa-white);
+  outline: none;
+  transition: all 0.2s;
+}
+
+.search-input:focus { border-color: var(--sa-green-mid); box-shadow: 0 0 0 4px rgba(45,74,45,0.08); }
+.search-input::placeholder { color: var(--sa-text-light); }
+
+.search-icon {
+  position: absolute; left: 15px; top: 50%; transform: translateY(-50%);
+  font-size: 17px; color: var(--sa-text-light); pointer-events: none;
+}
+
+.filter-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+
+.f-chip {
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1.5px solid var(--sa-cream-dark);
+  background: var(--sa-white);
+  color: var(--sa-text-mid);
+  user-select: none;
+}
+
+.f-chip:hover { border-color: var(--sa-green-mid); }
+.f-chip.active { background: var(--sa-green); color: var(--sa-cream); border-color: var(--sa-green); }
+
+.sort-select {
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  border: 2px solid var(--sa-cream-dark);
+  font-size: 13px;
+  font-family: 'Source Sans 3', sans-serif;
+  background: var(--sa-white);
+  color: var(--sa-text);
+  cursor: pointer;
+  outline: none;
+}
+
+/* ════════ GRID ════════ */
+.grid {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 20px 32px 60px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+  gap: 16px;
+}
+
+/* ════════ MEDICATION CARD ════════ */
+.med-card {
+  background: var(--sa-white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  transition: all 0.25s;
+  cursor: pointer;
+  position: relative;
+}
+
+.med-card:hover { box-shadow: var(--shadow-hover); transform: translateY(-2px); }
+
+.med-card-top {
+  padding: 18px 20px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.med-info { flex: 1; }
+
+.med-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--sa-text);
+  margin-bottom: 3px;
+}
+
+.med-generic {
+  font-size: 12.5px;
+  color: var(--sa-text-light);
+  font-style: italic;
+}
+
+.med-badges { display: flex; gap: 6px; flex-shrink: 0; margin-top: 2px; }
+
+.badge {
+  font-size: 10px;
+  padding: 3px 9px;
+  border-radius: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.badge.rx { background: rgba(192,57,43,0.1); color: var(--sa-red); }
+.badge.nsaid { background: rgba(41,128,185,0.1); color: var(--sa-blue); }
+.badge.kortiko { background: rgba(230,126,34,0.1); color: var(--sa-orange); }
+.badge.antib { background: rgba(142,68,173,0.1); color: #8e44ad; }
+.badge.antipar { background: rgba(39,174,96,0.1); color: #27ae60; }
+.badge.sedativ { background: rgba(44,62,80,0.1); color: #2c3e50; }
+.badge.gi { background: rgba(230,126,34,0.1); color: var(--sa-orange); }
+.badge.sonstige { background: rgba(127,140,141,0.1); color: #7f8c8d; }
+
+.med-meta {
+  padding: 0 20px 14px;
+  display: flex;
+  gap: 16px;
+  font-size: 12px;
+  color: var(--sa-text-light);
+}
+
+.meta-item { display: flex; align-items: center; gap: 4px; }
+
+/* Rating bars */
+.med-ratings {
+  padding: 12px 20px 16px;
+  border-top: 1px solid rgba(0,0,0,0.05);
+  display: flex;
+  gap: 20px;
+}
+
+.rating-col { flex: 1; }
+
+.rating-label {
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--sa-text-light);
+  font-weight: 500;
+  margin-bottom: 5px;
+}
+
+.rating-bar-track {
+  height: 6px;
+  background: rgba(0,0,0,0.06);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.rating-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.6s ease;
+}
+
+.rating-bar-fill.high { background: var(--sa-green-light); }
+.rating-bar-fill.mid { background: var(--sa-gold-dim); }
+.rating-bar-fill.low { background: var(--sa-red); }
+
+.rating-value {
+  font-size: 11px;
+  font-weight: 600;
+  margin-top: 3px;
+  color: var(--sa-text-mid);
+}
+
+.med-footer {
+  padding: 12px 20px;
+  background: rgba(245,240,228,0.35);
+  border-top: 1px solid rgba(0,0,0,0.04);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.review-count {
+  font-size: 12px;
+  color: var(--sa-text-light);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.review-count strong { color: var(--sa-green); font-weight: 600; }
+
+.add-review-btn {
+  padding: 7px 16px;
+  border-radius: 18px;
+  border: 1.5px solid var(--sa-green);
+  background: none;
+  color: var(--sa-green);
+  font-size: 12px;
+  font-weight: 600;
+  font-family: 'Source Sans 3', sans-serif;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.add-review-btn:hover { background: var(--sa-green); color: var(--sa-cream); }
+
+/* ════════ MODAL / DETAIL VIEW ════════ */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(26,46,26,0.55);
+  backdrop-filter: blur(6px);
+  z-index: 200;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 40px 20px;
+  overflow-y: auto;
+}
+
+.modal-overlay.open { display: flex; }
+
+.modal {
+  background: var(--sa-white);
+  border-radius: 18px;
+  max-width: 780px;
+  width: 100%;
+  box-shadow: var(--shadow-lg);
+  animation: modalIn 0.3s ease;
+  margin-bottom: 40px;
+}
+
+@keyframes modalIn {
+  from { opacity: 0; transform: translateY(20px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.modal-head {
+  padding: 24px 28px 20px;
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.modal-head-info { flex: 1; }
+
+.modal-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--sa-text);
+  margin-bottom: 4px;
+}
+
+.modal-subtitle {
+  font-size: 14px;
+  color: var(--sa-text-light);
+  font-style: italic;
+}
+
+.modal-close {
+  width: 38px; height: 38px;
+  border-radius: 10px;
+  border: none;
+  background: var(--sa-cream);
+  cursor: pointer;
+  font-size: 18px;
+  color: var(--sa-text-mid);
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+}
+
+.modal-close:hover { background: var(--sa-cream-dark); }
+
+/* Modal sections */
+.modal-section {
+  padding: 20px 28px;
+  border-bottom: 1px solid rgba(0,0,0,0.04);
+}
+
+.modal-section:last-child { border-bottom: none; }
+
+.ms-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--sa-green);
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ms-title .ms-icon {
+  width: 26px; height: 26px;
+  border-radius: 7px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; flex-shrink: 0;
+}
+
+.ms-icon.green { background: rgba(45,74,45,0.1); }
+.ms-icon.gold { background: var(--sa-gold-glow); }
+.ms-icon.blue { background: rgba(41,128,185,0.1); }
+
+/* Existing reviews */
+.review-item {
+  background: var(--sa-cream);
+  border-radius: var(--radius-sm);
+  padding: 16px;
+  margin-bottom: 10px;
+  position: relative;
+}
+
+.review-item:last-child { margin-bottom: 0; }
+
+.review-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.reviewer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.reviewer-avatar {
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 600;
+  color: var(--sa-cream);
+}
+
+.reviewer-avatar.vet { background: var(--sa-blue); }
+.reviewer-avatar.ther { background: var(--sa-green); }
+
+.reviewer-name { font-size: 13px; font-weight: 600; color: var(--sa-text); }
+.reviewer-role { font-size: 11px; color: var(--sa-text-light); }
+
+.review-date { font-size: 11px; color: var(--sa-text-light); }
+
+.review-text {
+  font-size: 13.5px;
+  line-height: 1.65;
+  color: var(--sa-text-mid);
+}
+
+.review-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--sa-blue);
+  text-decoration: none;
+  font-weight: 500;
+  padding: 3px 10px;
+  background: var(--sa-blue-pale);
+  border-radius: 12px;
+}
+
+.review-tags { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
+
+.r-tag {
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: 10px;
+  font-weight: 500;
+}
+
+.r-tag.pos { background: var(--sa-green-pale); color: var(--sa-green); }
+.r-tag.neg { background: var(--sa-red-pale); color: var(--sa-red); }
+.r-tag.neutral { background: var(--sa-cream); color: var(--sa-text-light); }
+
+/* ════════ NEW REVIEW FORM ════════ */
+.form-section {
+  padding: 24px 28px;
+  background: rgba(245,240,228,0.4);
+  border-top: 2px solid var(--sa-gold);
+}
+
+.form-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--sa-gold-dim);
+  margin-bottom: 18px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.form-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.form-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.form-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--sa-text-mid);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.form-input, .form-textarea, .form-select {
+  padding: 10px 14px;
+  border: 2px solid var(--sa-cream-dark);
+  border-radius: var(--radius-xs);
+  font-size: 14px;
+  font-family: 'Source Sans 3', sans-serif;
+  background: var(--sa-white);
+  outline: none;
+  transition: all 0.2s;
+  color: var(--sa-text);
+}
+
+.form-input:focus, .form-textarea:focus, .form-select:focus {
+  border-color: var(--sa-green-mid);
+  box-shadow: 0 0 0 3px rgba(45,74,45,0.08);
+}
+
+.form-textarea { resize: vertical; min-height: 100px; line-height: 1.6; }
+
+/* Star rating */
+.star-rating { display: flex; gap: 4px; }
+
+.star {
+  width: 32px; height: 32px;
+  border-radius: 6px;
+  border: 2px solid var(--sa-cream-dark);
+  background: var(--sa-white);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  transition: all 0.15s;
+}
+
+.star:hover, .star.active { border-color: var(--sa-gold); background: var(--sa-gold-glow); }
+.star.active { background: var(--sa-gold); color: var(--sa-dark); }
+
+/* Submit */
+.form-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 18px;
+}
+
+.btn-submit {
+  padding: 11px 28px;
+  border-radius: 10px;
+  border: none;
+  background: var(--sa-green);
+  color: var(--sa-cream);
+  font-size: 14px;
+  font-weight: 600;
+  font-family: 'Source Sans 3', sans-serif;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-submit:hover { background: var(--sa-green-mid); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(45,74,45,0.25); }
+
+.btn-cancel {
+  padding: 11px 20px;
+  border-radius: 10px;
+  border: 2px solid var(--sa-cream-dark);
+  background: var(--sa-white);
+  color: var(--sa-text-mid);
+  font-size: 14px;
+  font-weight: 500;
+  font-family: 'Source Sans 3', sans-serif;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-cancel:hover { border-color: var(--sa-text-light); }
+
+/* ════════ CONTRIBUTOR DASHBOARD ════════ */
+.contrib-dashboard {
+  background: linear-gradient(160deg, var(--sa-dark) 0%, var(--sa-green) 60%, #2a5a3a 100%);
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  color: var(--sa-cream);
+  position: relative;
+  overflow: hidden;
+}
+
+.contrib-dashboard::before {
+  content: '';
+  position: absolute;
+  top: -30px; right: -30px;
+  width: 160px; height: 160px;
+  background: radial-gradient(circle, rgba(232,201,106,0.08) 0%, transparent 70%);
+  border-radius: 50%;
+}
+
+.contrib-profile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.contrib-avatar {
+  width: 44px; height: 44px;
+  border-radius: 12px;
+  background: var(--sa-gold);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; font-weight: 700;
+  color: var(--sa-dark);
+  box-shadow: 0 2px 8px rgba(232,201,106,0.35);
+}
+
+.contrib-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 16px; font-weight: 600;
+  color: var(--sa-cream);
+}
+
+.contrib-role {
+  font-size: 11px;
+  color: rgba(255,255,255,0.5);
+  margin-top: 1px;
+}
+
+.contrib-level-area {
+  flex: 1;
+  min-width: 0;
+  padding: 0 20px;
+  border-left: 1px solid rgba(255,255,255,0.1);
+  border-right: 1px solid rgba(255,255,255,0.1);
+}
+
+.level-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 14px;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.level-badge.level-bronze { background: rgba(205,127,50,0.2); color: #d4a45a; border: 1px solid rgba(205,127,50,0.3); }
+.level-badge.level-silver { background: rgba(192,192,192,0.15); color: #c0c0c0; border: 1px solid rgba(192,192,192,0.25); }
+.level-badge.level-gold { background: rgba(232,201,106,0.2); color: var(--sa-gold); border: 1px solid rgba(232,201,106,0.3); }
+.level-badge.level-platin { background: rgba(229,228,226,0.15); color: #e5e4e2; border: 1px solid rgba(229,228,226,0.25); }
+
+.level-icon { font-size: 14px; }
+.level-label { letter-spacing: 0.3px; }
+
+.xp-bar-wrap { margin-top: 4px; }
+
+.xp-bar {
+  height: 6px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.xp-fill {
+  height: 100%;
+  border-radius: 3px;
+  background: linear-gradient(90deg, var(--sa-gold-dim) 0%, var(--sa-gold) 100%);
+  transition: width 0.8s ease;
+}
+
+.xp-text {
+  font-size: 11px;
+  color: rgba(255,255,255,0.5);
+  margin-top: 5px;
+}
+
+.contrib-rewards {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  flex-shrink: 0;
+}
+
+.reward-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  padding: 3px 0;
+}
+
+.reward-item.unlocked { color: rgba(255,255,255,0.8); }
+.reward-item.locked { color: rgba(255,255,255,0.35); }
+
+.reward-check {
+  color: var(--sa-gold);
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.reward-lock { font-size: 11px; }
+
+/* ── Quadrian Micro-Prompt ── */
+.quadrian-prompt {
+  margin-top: 12px;
+  background: var(--sa-white);
+  border-radius: var(--radius-sm);
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  box-shadow: var(--shadow);
+  border-left: 4px solid var(--sa-gold);
+  animation: slideDown 0.4s ease;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.qp-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.qp-icon {
+  width: 36px; height: 36px;
+  background: var(--sa-gold-glow);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.qp-title {
+  font-size: 11px;
+  color: var(--sa-text-light);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 500;
+  margin-bottom: 2px;
+}
+
+.qp-body {
+  font-size: 13.5px;
+  color: var(--sa-text);
+  line-height: 1.4;
+}
+
+.qp-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.qp-btn {
+  padding: 8px 18px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: 'Source Sans 3', sans-serif;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+}
+
+.qp-btn.primary {
+  background: var(--sa-green);
+  color: var(--sa-cream);
+}
+
+.qp-btn.primary:hover {
+  background: var(--sa-green-mid);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(45,74,45,0.25);
+}
+
+.qp-btn.secondary {
+  background: var(--sa-cream);
+  color: var(--sa-text-light);
+  border: 1px solid var(--sa-cream-dark);
+}
+
+.qp-btn.secondary:hover { background: var(--sa-cream-dark); }
+
+/* ════════ RESPONSIVE ════════ */
+@media (max-width: 900px) {
+  .grid { grid-template-columns: 1fr; padding: 16px; }
+  .toolbar { padding: 16px 16px 0; }
+  .header-stats { display: none; }
+  .contrib-dashboard { flex-direction: column; align-items: flex-start; gap: 16px; }
+  .contrib-level-area { border: none; padding: 0; width: 100%; }
+  .contrib-rewards { flex-direction: row; flex-wrap: wrap; gap: 8px; }
+  .quadrian-prompt { flex-direction: column; align-items: flex-start; }
+  .form-row { flex-direction: column; }
+  .modal { margin: 20px; border-radius: var(--radius); }
+}
+
+@media (max-width: 480px) {
+  .header-inner { padding: 12px 16px; }
+  .grid { grid-template-columns: 1fr; }
+  .med-ratings { flex-direction: column; gap: 10px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ════ HEADER ════ -->
+<header class="header">
+  <div class="header-inner">
+    <div class="logo-area">
+      <div class="logo-mark">S</div>
+      <div class="logo-text">
+        <div class="logo-brand">Sanoanimal</div>
+        <div class="logo-sub">Medikamenten-Bewertung</div>
+      </div>
+    </div>
+    <div class="header-stats">
+      <div class="h-stat">
+        <div class="h-stat-num" id="statMeds">50</div>
+        <div class="h-stat-label">Medikamente</div>
+      </div>
+      <div class="h-stat">
+        <div class="h-stat-num" id="statReviews">127</div>
+        <div class="h-stat-label">Bewertungen</div>
+      </div>
+      <div class="h-stat">
+        <div class="h-stat-num" id="statContrib">34</div>
+        <div class="h-stat-label">Mitwirkende</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ════ CONTRIBUTOR DASHBOARD ════ -->
+<div class="rag-banner" id="contribDash">
+  <div class="contrib-dashboard">
+    
+    <!-- Left: Personal Status -->
+    <div class="contrib-profile">
+      <div class="contrib-avatar">MK</div>
+      <div class="contrib-info">
+        <div class="contrib-name">M. Kellner</div>
+        <div class="contrib-role">Pferdetherapeutin · Sanoanimal-Netzwerk</div>
+      </div>
+    </div>
+
+    <!-- Center: Level & Progress -->
+    <div class="contrib-level-area">
+      <div class="level-badge level-silver">
+        <span class="level-icon">🥈</span>
+        <span class="level-label">Silber-Beitragende</span>
+      </div>
+      <div class="xp-bar-wrap">
+        <div class="xp-bar"><div class="xp-fill" style="width: 65%;"></div></div>
+        <div class="xp-text">13 / 20 Bewertungen → <strong style="color: var(--sa-gold);">Gold-Status</strong></div>
+      </div>
+    </div>
+
+    <!-- Right: What you unlock -->
+    <div class="contrib-rewards">
+      <div class="reward-item unlocked">
+        <span class="reward-check">✓</span>
+        <span>Praxis-Evidenz im Therapeutencheck</span>
+      </div>
+      <div class="reward-item unlocked">
+        <span class="reward-check">✓</span>
+        <span>Name als Experten-Quelle</span>
+      </div>
+      <div class="reward-item locked">
+        <span class="reward-lock">🔒</span>
+        <span>Vollzugang Wechselwirkungen-DB</span>
+      </div>
+      <div class="reward-item locked">
+        <span class="reward-lock">🔒</span>
+        <span>Experten-Badge Therapeuten-Finder</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Micro-Prompt from Quadrian -->
+  <div class="quadrian-prompt" id="quadrianPrompt">
+    <div class="qp-left">
+      <div class="qp-icon">📋</div>
+      <div class="qp-text">
+        <div class="qp-title">Aus deiner letzten Quadrian-Dokumentation:</div>
+        <div class="qp-body">Du hast <strong>Metacam (Meloxicam)</strong> bei <em>Fallakte #PF-2026-0312</em> eingesetzt. Kurze Bewertung abgeben? <span style="color: var(--sa-text-light);">(~30 Sek.)</span></div>
+      </div>
+    </div>
+    <div class="qp-actions">
+      <button class="qp-btn primary" onclick="openModal(3, true)">Jetzt bewerten</button>
+      <button class="qp-btn secondary" onclick="dismissPrompt()">Später</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ TOOLBAR ════ -->
+<div class="toolbar">
+  <div class="search-wrap">
+    <span class="search-icon">⌕</span>
+    <input type="text" class="search-input" placeholder="Medikament suchen…" id="searchInput" oninput="filterCards()">
+  </div>
+  <div class="filter-chips" id="filterChips">
+    <div class="f-chip active" data-cat="alle" onclick="setFilter(this)">Alle</div>
+    <div class="f-chip" data-cat="nsaid" onclick="setFilter(this)">NSAID</div>
+    <div class="f-chip" data-cat="kortiko" onclick="setFilter(this)">Kortikosteroide</div>
+    <div class="f-chip" data-cat="antib" onclick="setFilter(this)">Antibiotika</div>
+    <div class="f-chip" data-cat="antipar" onclick="setFilter(this)">Antiparasitika</div>
+    <div class="f-chip" data-cat="sedativ" onclick="setFilter(this)">Sedativa</div>
+    <div class="f-chip" data-cat="gi" onclick="setFilter(this)">GI-Trakt</div>
+    <div class="f-chip" data-cat="sonstige" onclick="setFilter(this)">Sonstige</div>
+  </div>
+  <select class="sort-select" onchange="sortCards(this.value)">
+    <option value="name">A → Z</option>
+    <option value="reviews">Meiste Bewertungen</option>
+    <option value="need">Bewertung nötig</option>
+  </select>
+</div>
+
+<!-- ════ GRID ════ -->
+<div class="grid" id="medGrid"></div>
+
+<!-- ════ MODAL ════ -->
+<div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal" id="modalContent"></div>
+</div>
+
+<script>
+// ══════════════════════════════════════
+// DATA: Top 50 equine medications
+// ══════════════════════════════════════
+const medications = [
+  { id: 1, name: "Equipalazone", generic: "Phenylbutazon", cat: "nsaid", rx: true, use: "Schmerz, Entzündung Bewegungsapparat", reviews: 18, avgEff: 78, avgSafe: 52, avgRec: 55 },
+  { id: 2, name: "Finadyne", generic: "Flunixin-Meglumin", cat: "nsaid", rx: true, use: "Kolik, viszeraler Schmerz", reviews: 15, avgEff: 88, avgSafe: 60, avgRec: 68 },
+  { id: 3, name: "Metacam", generic: "Meloxicam", cat: "nsaid", rx: true, use: "Entzündung, Schmerz", reviews: 12, avgEff: 72, avgSafe: 70, avgRec: 72 },
+  { id: 4, name: "Dexadreson", generic: "Dexamethason", cat: "kortiko", rx: true, use: "Entzündung, allergische Reaktionen", reviews: 14, avgEff: 85, avgSafe: 38, avgRec: 40 },
+  { id: 5, name: "Prednisolon", generic: "Prednisolon", cat: "kortiko", rx: true, use: "Entzündung, Immunsuppression", reviews: 9, avgEff: 70, avgSafe: 45, avgRec: 48 },
+  { id: 6, name: "Dexafort", generic: "Dexamethason-21-isonicotinat", cat: "kortiko", rx: true, use: "Langzeit-Entzündungshemmung", reviews: 7, avgEff: 82, avgSafe: 30, avgRec: 32 },
+  { id: 7, name: "Equisolon", generic: "Prednisolon", cat: "kortiko", rx: true, use: "Equines Asthma (RAO/IAD)", reviews: 11, avgEff: 75, avgSafe: 55, avgRec: 60 },
+  { id: 8, name: "Domosedan", generic: "Detomidin", cat: "sedativ", rx: true, use: "Sedation, stehende Eingriffe", reviews: 16, avgEff: 92, avgSafe: 75, avgRec: 82 },
+  { id: 9, name: "Sedivet", generic: "Romifidin", cat: "sedativ", rx: true, use: "Sedation, Diagnostik", reviews: 8, avgEff: 80, avgSafe: 72, avgRec: 74 },
+  { id: 10, name: "Cepesedan", generic: "Detomidin", cat: "sedativ", rx: true, use: "Sedation, Zahnbehandlung", reviews: 6, avgEff: 88, avgSafe: 74, avgRec: 78 },
+  { id: 11, name: "Eraquell", generic: "Ivermectin", cat: "antipar", rx: true, use: "Endoparasiten, Strongyliden", reviews: 14, avgEff: 82, avgSafe: 68, avgRec: 70 },
+  { id: 12, name: "Equest", generic: "Moxidectin", cat: "antipar", rx: true, use: "Endoparasiten inkl. enzystierte Larven", reviews: 12, avgEff: 90, avgSafe: 58, avgRec: 62 },
+  { id: 13, name: "Panacur", generic: "Fenbendazol", cat: "antipar", rx: true, use: "Endoparasiten, Spulwürmer", reviews: 10, avgEff: 55, avgSafe: 85, avgRec: 58 },
+  { id: 14, name: "Pramox", generic: "Pyrantel + Oxantel", cat: "antipar", rx: true, use: "Breitband-Entwurmung", reviews: 5, avgEff: 65, avgSafe: 80, avgRec: 62 },
+  { id: 15, name: "Equimax", generic: "Ivermectin + Praziquantel", cat: "antipar", rx: true, use: "Würmer + Bandwürmer", reviews: 9, avgEff: 85, avgSafe: 65, avgRec: 72 },
+  { id: 16, name: "Gastrogard", generic: "Omeprazol", cat: "gi", rx: true, use: "Magenulzera (Behandlung)", reviews: 17, avgEff: 88, avgSafe: 82, avgRec: 85 },
+  { id: 17, name: "Ulcergard", generic: "Omeprazol", cat: "gi", rx: false, use: "Magenulzera (Prophylaxe)", reviews: 8, avgEff: 72, avgSafe: 85, avgRec: 78 },
+  { id: 18, name: "Sucralfat", generic: "Sucralfat", cat: "gi", rx: true, use: "Magenschleimhaut-Schutz", reviews: 6, avgEff: 55, avgSafe: 90, avgRec: 65 },
+  { id: 19, name: "Buscopan comp.", generic: "Butylscopolamin + Metamizol", cat: "gi", rx: true, use: "Kolik, Spasmen", reviews: 13, avgEff: 85, avgSafe: 68, avgRec: 75 },
+  { id: 20, name: "Excede", generic: "Ceftiofur", cat: "antib", rx: true, use: "Atemwegsinfektionen", reviews: 7, avgEff: 78, avgSafe: 60, avgRec: 55 },
+  { id: 21, name: "Gentamicin", generic: "Gentamicin", cat: "antib", rx: true, use: "Gelenkinfektionen, topisch", reviews: 5, avgEff: 75, avgSafe: 50, avgRec: 52 },
+  { id: 22, name: "Norodine", generic: "Trimethoprim-Sulfonamid", cat: "antib", rx: true, use: "Breitband-Antibiotikum", reviews: 11, avgEff: 70, avgSafe: 65, avgRec: 68 },
+  { id: 23, name: "Penicillin", generic: "Benzylpenicillin-Procain", cat: "antib", rx: true, use: "Streptokokken, Wundinfektionen", reviews: 10, avgEff: 82, avgSafe: 72, avgRec: 75 },
+  { id: 24, name: "Enrofloxacin", generic: "Enrofloxacin", cat: "antib", rx: true, use: "Reserveantibiotikum, gram-negativ", reviews: 4, avgEff: 85, avgSafe: 40, avgRec: 35 },
+  { id: 25, name: "Metronidazol", generic: "Metronidazol", cat: "antib", rx: true, use: "Anaerobier, Clostridien", reviews: 6, avgEff: 80, avgSafe: 58, avgRec: 62 },
+  { id: 26, name: "Novalgin", generic: "Metamizol", cat: "nsaid", rx: true, use: "Kolik, Fieber, viszeraler Schmerz", reviews: 13, avgEff: 82, avgSafe: 70, avgRec: 75 },
+  { id: 27, name: "Butorphanol", generic: "Butorphanol", cat: "sedativ", rx: true, use: "Analgesie, Kolik, Sedation-Kombi", reviews: 9, avgEff: 78, avgSafe: 72, avgRec: 74 },
+  { id: 28, name: "Xylazin", generic: "Xylazin", cat: "sedativ", rx: true, use: "Sedation, Analgesie, Muskelrelaxation", reviews: 12, avgEff: 85, avgSafe: 62, avgRec: 68 },
+  { id: 29, name: "Adequan", generic: "Polysulfatierte Glykosaminoglykane", cat: "sonstige", rx: true, use: "Gelenkgesundheit, Arthrose", reviews: 8, avgEff: 60, avgSafe: 88, avgRec: 65 },
+  { id: 30, name: "Osphos", generic: "Clodronsäure", cat: "sonstige", rx: true, use: "Podotrochlose, Knochenödeme", reviews: 7, avgEff: 65, avgSafe: 55, avgRec: 58 },
+  { id: 31, name: "Tildren", generic: "Tiludronat", cat: "sonstige", rx: true, use: "Knochenumbau, Spat", reviews: 9, avgEff: 68, avgSafe: 62, avgRec: 60 },
+  { id: 32, name: "Regumate", generic: "Altrenogest", cat: "sonstige", rx: true, use: "Zyklussteuerung Stute", reviews: 6, avgEff: 88, avgSafe: 45, avgRec: 55 },
+  { id: 33, name: "Oxytocin", generic: "Oxytocin", cat: "sonstige", rx: true, use: "Geburtshilfe, Uterusinvolution", reviews: 5, avgEff: 90, avgSafe: 70, avgRec: 78 },
+  { id: 34, name: "Pergolid", generic: "Pergolid", cat: "sonstige", rx: true, use: "PPID (Equines Cushing)", reviews: 14, avgEff: 75, avgSafe: 65, avgRec: 72 },
+  { id: 35, name: "Prascend", generic: "Pergolid", cat: "sonstige", rx: true, use: "PPID (Equines Cushing)", reviews: 16, avgEff: 78, avgSafe: 68, avgRec: 75 },
+  { id: 36, name: "Diazepam", generic: "Diazepam", cat: "sedativ", rx: true, use: "Krampfanfälle, Fohlen-Sedation", reviews: 4, avgEff: 82, avgSafe: 60, avgRec: 62 },
+  { id: 37, name: "Ketamin", generic: "Ketamin", cat: "sedativ", rx: true, use: "Kurznarkose, Feldchirurgie", reviews: 7, avgEff: 92, avgSafe: 58, avgRec: 70 },
+  { id: 38, name: "Dormosedan Gel", generic: "Detomidin (oral)", cat: "sedativ", rx: true, use: "Orale Sedation, Clipping", reviews: 5, avgEff: 65, avgSafe: 78, avgRec: 68 },
+  { id: 39, name: "Isoxsuprin", generic: "Isoxsuprin", cat: "sonstige", rx: true, use: "Hufrollenerkrankung (umstritten)", reviews: 3, avgEff: 30, avgSafe: 80, avgRec: 25 },
+  { id: 40, name: "DMSO", generic: "Dimethylsulfoxid", cat: "sonstige", rx: false, use: "Entzündung, Ödem, topisch/i.v.", reviews: 8, avgEff: 60, avgSafe: 65, avgRec: 58 },
+  { id: 41, name: "Acepromazin", generic: "Acepromazin", cat: "sedativ", rx: true, use: "Leichte Sedation, Prämedikation", reviews: 6, avgEff: 55, avgSafe: 52, avgRec: 48 },
+  { id: 42, name: "Atropin", generic: "Atropin", cat: "sonstige", rx: true, use: "Ophthalmologie, Bradykardie", reviews: 4, avgEff: 85, avgSafe: 55, avgRec: 60 },
+  { id: 43, name: "Furosemid", generic: "Furosemid", cat: "sonstige", rx: true, use: "Ödeme, EIPH", reviews: 5, avgEff: 82, avgSafe: 50, avgRec: 55 },
+  { id: 44, name: "Doxycyclin", generic: "Doxycyclin", cat: "antib", rx: true, use: "Atemwege, Borreliose", reviews: 6, avgEff: 72, avgSafe: 55, avgRec: 60 },
+  { id: 45, name: "Marbofloxacin", generic: "Marbofloxacin", cat: "antib", rx: true, use: "Reserveantibiotikum, Fluorchinolon", reviews: 3, avgEff: 82, avgSafe: 42, avgRec: 38 },
+  { id: 46, name: "Clenbuterol", generic: "Clenbuterol", cat: "sonstige", rx: true, use: "Bronchospasmolyse, RAO", reviews: 7, avgEff: 72, avgSafe: 55, avgRec: 58 },
+  { id: 47, name: "Ventipulmin", generic: "Clenbuterol", cat: "sonstige", rx: true, use: "Chronische Atemwegserkrankung", reviews: 9, avgEff: 70, avgSafe: 58, avgRec: 60 },
+  { id: 48, name: "Tetanusserum", generic: "Tetanus-Antitoxin", cat: "sonstige", rx: true, use: "Tetanusprophylaxe (passiv)", reviews: 4, avgEff: 90, avgSafe: 75, avgRec: 85 },
+  { id: 49, name: "Tribrissen", generic: "Trimethoprim-Sulfonamid", cat: "antib", rx: true, use: "Atemwege, Harnwege, Wunden", reviews: 8, avgEff: 68, avgSafe: 65, avgRec: 65 },
+  { id: 50, name: "Surpass", generic: "Diclofenac (topisch)", cat: "nsaid", rx: true, use: "Topische Entzündungshemmung", reviews: 3, avgEff: 45, avgSafe: 82, avgRec: 42 }
+];
+
+// Sample reviews for demo
+const sampleReviews = {
+  1: [
+    {
+      name: "Dr. K. Schneider",
+      role: "Tierärztin · Pferdeklinik Mühlen",
+      type: "vet",
+      date: "12. März 2026",
+      text: "Phenylbutazon setze ich nur noch als Notfallanalgetikum bei akuten Lahmheiten ein. Für Langzeittherapie >5 Tage weiche ich auf Meloxicam aus. Bei ca. 30–40% meiner Patienten sehe ich unter Bute gastroskopisch nachweisbare Schleimhautveränderungen schon nach 7 Tagen. Das steht so nicht in den Herstellerangaben.",
+      link: "Fallakte #PF-2024-0847",
+      tags: ["GI-Probleme häufig", "Nur kurzzeitig", "Hersteller verharmlosend"]
+    },
+    {
+      name: "M. Kellner",
+      role: "Pferdetherapeutin · Sanoanimal",
+      type: "ther",
+      date: "8. März 2026",
+      text: "In meiner Praxis erlebe ich regelmäßig Pferde, die wochenlang auf Bute gesetzt werden, ohne Magenschutz. Die Besitzer merken die Magenprobleme erst, wenn Kotwasser oder Appetitlosigkeit auftreten. Meine Empfehlung: Immer Omeprazol parallel, und nach 5 Tagen Therapie-Reevaluation mit dem Tierarzt.",
+      link: null,
+      tags: ["Magenschutz pflicht", "Besitzer-Aufklärung nötig"]
+    }
+  ],
+  16: [
+    {
+      name: "Dr. L. Petersen",
+      role: "Tierarzt · Pferdepraxis Nord",
+      type: "vet",
+      date: "5. März 2026",
+      text: "Gastrogard ist der Goldstandard bei EGUS Grade 2+. Aber Vorsicht: die Wirkung setzt erst nach ca. 3–5 Tagen voll ein. Viele Besitzer setzen zu früh ab. Mindestens 28 Tage bei bestätigtem Ulkus, danach ausschleichen über 7–10 Tage. Das empfohlene Dosierungsschema der Firma ist korrekt, aber das Ausschleichen wird zu selten kommuniziert.",
+      link: "Gastroskopie-Protokoll #GS-2025-112",
+      tags: ["Goldstandard", "Nicht zu früh absetzen", "Ausschleichen wichtig"]
+    }
+  ]
+};
+
+// ══════════════════════════════════════
+// RENDER
+// ══════════════════════════════════════
+let activeFilter = 'alle';
+let searchTerm = '';
+
+function getBarClass(val) {
+  if (val >= 70) return 'high';
+  if (val >= 45) return 'mid';
+  return 'low';
+}
+
+function getCatBadge(cat) {
+  const labels = {
+    nsaid: 'NSAID', kortiko: 'Kortikosteroid', antib: 'Antibiotikum',
+    antipar: 'Antiparasitikum', sedativ: 'Sedativum', gi: 'GI-Trakt', sonstige: 'Sonstige'
+  };
+  return `<span class="badge ${cat}">${labels[cat] || cat}</span>`;
+}
+
+function renderCards() {
+  const grid = document.getElementById('medGrid');
+  let filtered = medications.filter(m => {
+    const matchCat = activeFilter === 'alle' || m.cat === activeFilter;
+    const matchSearch = !searchTerm || 
+      m.name.toLowerCase().includes(searchTerm) || 
+      m.generic.toLowerCase().includes(searchTerm) ||
+      m.use.toLowerCase().includes(searchTerm);
+    return matchCat && matchSearch;
+  });
+
+  grid.innerHTML = filtered.map(m => `
+    <div class="med-card" onclick="openModal(${m.id})">
+      <div class="med-card-top">
+        <div class="med-info">
+          <div class="med-name">${m.name}</div>
+          <div class="med-generic">${m.generic}</div>
+        </div>
+        <div class="med-badges">
+          ${getCatBadge(m.cat)}
+          ${m.rx ? '<span class="badge rx">Rx</span>' : ''}
+        </div>
+      </div>
+      <div class="med-meta">
+        <span class="meta-item">📋 ${m.use}</span>
+      </div>
+      <div class="med-ratings">
+        <div class="rating-col">
+          <div class="rating-label">Wirksamkeit</div>
+          <div class="rating-bar-track"><div class="rating-bar-fill ${getBarClass(m.avgEff)}" style="width:${m.avgEff}%"></div></div>
+          <div class="rating-value">${m.avgEff}%</div>
+        </div>
+        <div class="rating-col">
+          <div class="rating-label">Verträglichkeit</div>
+          <div class="rating-bar-track"><div class="rating-bar-fill ${getBarClass(m.avgSafe)}" style="width:${m.avgSafe}%"></div></div>
+          <div class="rating-value">${m.avgSafe}%</div>
+        </div>
+        <div class="rating-col">
+          <div class="rating-label">Empfehlung</div>
+          <div class="rating-bar-track"><div class="rating-bar-fill ${getBarClass(m.avgRec)}" style="width:${m.avgRec}%"></div></div>
+          <div class="rating-value">${m.avgRec}%</div>
+        </div>
+      </div>
+      <div class="med-footer">
+        <div class="review-count">💬 <strong>${m.reviews}</strong> Bewertungen</div>
+        <button class="add-review-btn" onclick="event.stopPropagation();openModal(${m.id}, true)">+ Bewerten</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ══════════════════════════════════════
+// MODAL
+// ══════════════════════════════════════
+function openModal(medId, scrollToForm = false) {
+  const m = medications.find(x => x.id === medId);
+  if (!m) return;
+  const reviews = sampleReviews[medId] || [];
+
+  document.getElementById('modalContent').innerHTML = `
+    <div class="modal-head">
+      <div class="modal-head-info">
+        <div class="modal-title">${m.name}</div>
+        <div class="modal-subtitle">${m.generic} · ${m.use}</div>
+      </div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+
+    <!-- Aggregate Ratings -->
+    <div class="modal-section">
+      <div class="ms-title"><span class="ms-icon green">📊</span> Aggregierte Praxis-Bewertung (${m.reviews} Einträge)</div>
+      <div class="med-ratings" style="padding: 0; border: none;">
+        <div class="rating-col">
+          <div class="rating-label">Wirksamkeit</div>
+          <div class="rating-bar-track"><div class="rating-bar-fill ${getBarClass(m.avgEff)}" style="width:${m.avgEff}%"></div></div>
+          <div class="rating-value">${m.avgEff}% — ${m.avgEff >= 70 ? 'Gut' : m.avgEff >= 45 ? 'Mittel' : 'Gering'}</div>
+        </div>
+        <div class="rating-col">
+          <div class="rating-label">Verträglichkeit</div>
+          <div class="rating-bar-track"><div class="rating-bar-fill ${getBarClass(m.avgSafe)}" style="width:${m.avgSafe}%"></div></div>
+          <div class="rating-value">${m.avgSafe}% — ${m.avgSafe >= 70 ? 'Gut' : m.avgSafe >= 45 ? 'Mäßig' : 'Problematisch'}</div>
+        </div>
+        <div class="rating-col">
+          <div class="rating-label">Empfehlung</div>
+          <div class="rating-bar-track"><div class="rating-bar-fill ${getBarClass(m.avgRec)}" style="width:${m.avgRec}%"></div></div>
+          <div class="rating-value">${m.avgRec}% — ${m.avgRec >= 70 ? 'Empfohlen' : m.avgRec >= 45 ? 'Bedingt' : 'Kritisch'}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Reviews -->
+    <div class="modal-section">
+      <div class="ms-title"><span class="ms-icon gold">💬</span> Praxis-Erfahrungsberichte</div>
+      ${reviews.length > 0 ? reviews.map(r => `
+        <div class="review-item">
+          <div class="review-header">
+            <div class="reviewer">
+              <div class="reviewer-avatar ${r.type}">${r.name.split(' ').map(n=>n[0]).join('').slice(0,2)}</div>
+              <div>
+                <div class="reviewer-name">${r.name}</div>
+                <div class="reviewer-role">${r.role}</div>
+              </div>
+            </div>
+            <div class="review-date">${r.date}</div>
+          </div>
+          <div class="review-text">${r.text}</div>
+          ${r.link ? `<a href="#" class="review-link" onclick="event.preventDefault()">📎 ${r.link}</a>` : ''}
+          <div class="review-tags">
+            ${r.tags.map(t => `<span class="r-tag ${t.includes('Goldstandard') || t.includes('Empf') ? 'pos' : t.includes('Problem') || t.includes('verharm') || t.includes('Kritisch') ? 'neg' : 'neutral'}">${t}</span>`).join('')}
+          </div>
+        </div>
+      `).join('') : `
+        <div style="text-align:center; padding:24px; color:var(--sa-text-light); font-size:14px;">
+          Noch keine Praxis-Erfahrungsberichte vorhanden.<br>
+          <strong style="color:var(--sa-green);">Sei die/der Erste!</strong>
+        </div>
+      `}
+    </div>
+
+    <!-- NEW REVIEW FORM -->
+    <div class="form-section" id="reviewForm">
+      <div class="form-title">✍️ Neue Praxis-Bewertung abgeben</div>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Name (wird als Quellennachweis angezeigt)</label>
+          <input class="form-input" type="text" placeholder="z.B. Dr. Anna Müller">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Rolle</label>
+          <select class="form-select">
+            <option>Tierärztin / Tierarzt</option>
+            <option>Pferdetherapeutin / -therapeut</option>
+            <option>Tierheilpraktiker/in</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Praxis / Klinik</label>
+          <input class="form-input" type="text" placeholder="z.B. Pferdeklinik Süd">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Erfahrungsjahre mit diesem Medikament</label>
+          <select class="form-select">
+            <option>< 1 Jahr</option>
+            <option>1–3 Jahre</option>
+            <option>3–5 Jahre</option>
+            <option>5–10 Jahre</option>
+            <option>> 10 Jahre</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Wirksamkeit</label>
+          <div class="star-rating" data-field="eff">
+            ${[1,2,3,4,5].map(i => `<div class="star" onclick="rate(this, ${i})" data-val="${i}">${i <= 3 ? '★' : '★'}</div>`).join('')}
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Verträglichkeit</label>
+          <div class="star-rating" data-field="safe">
+            ${[1,2,3,4,5].map(i => `<div class="star" onclick="rate(this, ${i})" data-val="${i}">★</div>`).join('')}
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Empfehlung</label>
+          <div class="star-rating" data-field="rec">
+            ${[1,2,3,4,5].map(i => `<div class="star" onclick="rate(this, ${i})" data-val="${i}">★</div>`).join('')}
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-bottom: 14px;">
+        <label class="form-label">Praxis-Erfahrungsbericht</label>
+        <textarea class="form-textarea" placeholder="Beschreibe deine Erfahrung mit diesem Medikament. Was sehen Hersteller-Texte anders als die Realität? Welche Nebenwirkungen erlebst du in der Praxis? Welche Alternativen bevorzugst du?"></textarea>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Link zur Patientenakte (optional)</label>
+          <input class="form-input" type="text" placeholder="z.B. Quadrian-Akte #PF-2024-0847 oder URL">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tags (Komma-getrennt)</label>
+          <input class="form-input" type="text" placeholder="z.B. GI-Probleme, Nur kurzzeitig, Magenschutz nötig">
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button class="btn-cancel" onclick="closeModal()">Abbrechen</button>
+        <button class="btn-submit" onclick="submitReview()">Bewertung absenden</button>
+      </div>
+    </div>
+  `;
+
+  document.getElementById('modalOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+
+  if (scrollToForm) {
+    setTimeout(() => {
+      document.getElementById('reviewForm').scrollIntoView({ behavior: 'smooth' });
+    }, 350);
+  }
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function rate(el, val) {
+  const group = el.parentElement;
+  group.querySelectorAll('.star').forEach((s, i) => {
+    s.classList.toggle('active', i < val);
+  });
+}
+
+function submitReview() {
+  // Prototype: show success with XP feedback
+  const form = document.getElementById('reviewForm');
+  form.innerHTML = `
+    <div style="text-align:center; padding:32px;">
+      <div style="font-size:48px; margin-bottom:12px;">✅</div>
+      <div style="font-family:'Playfair Display',serif; font-size:18px; font-weight:600; color:var(--sa-green); margin-bottom:8px;">Bewertung gespeichert!</div>
+      <div style="font-size:14px; color:var(--sa-text-light); line-height:1.6; margin-bottom:16px;">
+        Dein Erfahrungsbericht wird in die Sanoanimal-Wissensbasis aufgenommen<br>
+        und verbessert die Antworten im Therapeutencheck.
+      </div>
+      <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
+        <div style="padding:8px 18px; border-radius:20px; background:var(--sa-gold-glow); border:1px solid rgba(232,201,106,0.3); font-size:13px; font-weight:600; color:var(--sa-gold-dim);">
+          +1 Bewertung → 14/20 zum Gold-Status
+        </div>
+        <div style="padding:8px 18px; border-radius:20px; background:var(--sa-green-pale); font-size:13px; font-weight:600; color:var(--sa-green);">
+          Praxis-Evidenz Layer aktualisiert
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function dismissPrompt() {
+  const prompt = document.getElementById('quadrianPrompt');
+  prompt.style.transition = 'all 0.3s ease';
+  prompt.style.opacity = '0';
+  prompt.style.transform = 'translateY(-8px)';
+  setTimeout(() => prompt.style.display = 'none', 300);
+}
+
+// ══════════════════════════════════════
+// FILTERS & SORT
+// ══════════════════════════════════════
+function setFilter(el) {
+  document.querySelectorAll('.f-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  activeFilter = el.dataset.cat;
+  renderCards();
+}
+
+function filterCards() {
+  searchTerm = document.getElementById('searchInput').value.toLowerCase();
+  renderCards();
+}
+
+function sortCards(mode) {
+  if (mode === 'reviews') medications.sort((a,b) => b.reviews - a.reviews);
+  else if (mode === 'need') medications.sort((a,b) => a.reviews - b.reviews);
+  else medications.sort((a,b) => a.name.localeCompare(b.name));
+  renderCards();
+}
+
+// Keyboard shortcut
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+// Init
+renderCards();
+</script>
+</body>
+</html>

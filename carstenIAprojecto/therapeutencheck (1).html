@@ -1,0 +1,1186 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sanoanimal Therapeutencheck — Veterinärpharmakologie</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Source+Sans+3:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --sa-dark: #1a2e1a;
+    --sa-green: #2d4a2d;
+    --sa-green-mid: #3d6b3d;
+    --sa-green-light: #4a8a4a;
+    --sa-gold: #E8C96A;
+    --sa-gold-dim: #c4a84e;
+    --sa-gold-glow: rgba(232, 201, 106, 0.15);
+    --sa-cream: #f5f0e4;
+    --sa-cream-dark: #e8e0cc;
+    --sa-text: #1a1a1a;
+    --sa-text-light: #6b6b6b;
+    --sa-white: #ffffff;
+    --sa-red: #c0392b;
+    --sa-orange: #e67e22;
+    --sa-blue: #2980b9;
+    --radius: 12px;
+    --radius-sm: 8px;
+    --shadow: 0 2px 12px rgba(0,0,0,0.08);
+    --shadow-lg: 0 8px 32px rgba(0,0,0,0.12);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Source Sans 3', sans-serif;
+    background: var(--sa-cream);
+    color: var(--sa-text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── Header ── */
+  .header {
+    background: linear-gradient(135deg, var(--sa-dark) 0%, var(--sa-green) 60%, var(--sa-green-mid) 100%);
+    padding: 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+  }
+
+  .header-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .logo-area {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .logo-icon {
+    width: 42px;
+    height: 42px;
+    background: var(--sa-gold);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    color: var(--sa-dark);
+    font-weight: 700;
+    font-family: 'Playfair Display', serif;
+    box-shadow: 0 2px 8px rgba(232, 201, 106, 0.3);
+  }
+
+  .logo-text {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .logo-brand {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--sa-cream);
+    letter-spacing: 0.5px;
+  }
+
+  .logo-sub {
+    font-size: 11px;
+    color: var(--sa-gold);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-weight: 500;
+    margin-top: 1px;
+  }
+
+  .header-nav {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .nav-pill {
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.7);
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+    background: none;
+    text-decoration: none;
+  }
+
+  .nav-pill:hover { color: var(--sa-cream); background: rgba(255,255,255,0.1); }
+  .nav-pill.active { color: var(--sa-dark); background: var(--sa-gold); font-weight: 600; }
+
+  .user-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: 16px;
+    padding: 6px 14px 6px 8px;
+    border-radius: 20px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.12);
+  }
+
+  .user-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--sa-green-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--sa-cream);
+  }
+
+  .user-name {
+    font-size: 13px;
+    color: rgba(255,255,255,0.85);
+    font-weight: 500;
+  }
+
+  /* ── Main Layout ── */
+  .main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 28px 24px;
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 24px;
+    min-height: calc(100vh - 74px);
+  }
+
+  /* ── Sidebar ── */
+  .sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .card {
+    background: var(--sa-white);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+
+  .card-header {
+    padding: 16px 20px 12px;
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .card-header-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+
+  .card-header-icon.green { background: rgba(45,74,45,0.1); color: var(--sa-green); }
+  .card-header-icon.gold { background: var(--sa-gold-glow); color: var(--sa-gold-dim); }
+  .card-header-icon.blue { background: rgba(41,128,185,0.1); color: var(--sa-blue); }
+  .card-header-icon.red { background: rgba(192,57,43,0.1); color: var(--sa-red); }
+
+  .card-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--sa-text);
+  }
+
+  .card-body { padding: 16px 20px 20px; }
+
+  /* ── Search Module ── */
+  .search-box {
+    position: relative;
+    margin-bottom: 16px;
+  }
+
+  .search-input {
+    width: 100%;
+    padding: 12px 16px 12px 42px;
+    border: 2px solid var(--sa-cream-dark);
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    font-family: 'Source Sans 3', sans-serif;
+    background: var(--sa-cream);
+    color: var(--sa-text);
+    transition: all 0.2s;
+    outline: none;
+  }
+
+  .search-input:focus {
+    border-color: var(--sa-green-mid);
+    background: var(--sa-white);
+    box-shadow: 0 0 0 4px rgba(45,74,45,0.08);
+  }
+
+  .search-input::placeholder { color: var(--sa-text-light); }
+
+  .search-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 16px;
+    color: var(--sa-text-light);
+    pointer-events: none;
+  }
+
+  /* ── Category Chips ── */
+  .category-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .cat-chip {
+    padding: 7px 14px;
+    border-radius: 20px;
+    font-size: 12.5px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1.5px solid var(--sa-cream-dark);
+    background: var(--sa-white);
+    color: var(--sa-text);
+    user-select: none;
+  }
+
+  .cat-chip:hover { border-color: var(--sa-green-mid); background: rgba(45,74,45,0.04); }
+  .cat-chip.active {
+    background: var(--sa-green);
+    color: var(--sa-cream);
+    border-color: var(--sa-green);
+  }
+
+  .cat-chip .chip-icon { margin-right: 4px; }
+
+  /* ── Quick Access Links ── */
+  .quick-links {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .quick-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all 0.15s;
+    text-decoration: none;
+    color: var(--sa-text);
+  }
+
+  .quick-link:hover { background: var(--sa-cream); }
+
+  .ql-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .ql-dot.green { background: var(--sa-green-light); }
+  .ql-dot.gold { background: var(--sa-gold); }
+  .ql-dot.orange { background: var(--sa-orange); }
+  .ql-dot.red { background: var(--sa-red); }
+  .ql-dot.blue { background: var(--sa-blue); }
+
+  .ql-text {
+    font-size: 13.5px;
+    font-weight: 400;
+    flex: 1;
+  }
+
+  .ql-badge {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    background: var(--sa-cream);
+    color: var(--sa-text-light);
+    font-weight: 500;
+  }
+
+  /* ── Content Area ── */
+  .content {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  /* ── Chat / Query Interface ── */
+  .chat-area {
+    background: var(--sa-white);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+    min-height: 520px;
+    overflow: hidden;
+  }
+
+  .chat-header {
+    padding: 18px 24px;
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .chat-header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .chat-mode-indicator {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 16px;
+    background: rgba(45,74,45,0.08);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--sa-green);
+  }
+
+  .pulse-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--sa-green-light);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.85); }
+  }
+
+  .chat-header-actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  .icon-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    border: 1px solid rgba(0,0,0,0.08);
+    background: var(--sa-white);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    color: var(--sa-text-light);
+    transition: all 0.15s;
+  }
+
+  .icon-btn:hover { background: var(--sa-cream); color: var(--sa-text); }
+
+  /* ── Messages ── */
+  .chat-messages {
+    flex: 1;
+    padding: 24px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .msg {
+    display: flex;
+    gap: 12px;
+    max-width: 88%;
+    animation: msgIn 0.3s ease-out;
+  }
+
+  @keyframes msgIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .msg.user { align-self: flex-end; flex-direction: row-reverse; }
+
+  .msg-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 600;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .msg-avatar.system {
+    background: linear-gradient(135deg, var(--sa-green) 0%, var(--sa-green-mid) 100%);
+    color: var(--sa-gold);
+  }
+
+  .msg-avatar.human {
+    background: var(--sa-gold);
+    color: var(--sa-dark);
+  }
+
+  .msg-bubble {
+    padding: 14px 18px;
+    border-radius: 14px;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .msg.assistant .msg-bubble {
+    background: var(--sa-cream);
+    color: var(--sa-text);
+    border-bottom-left-radius: 4px;
+  }
+
+  .msg.user .msg-bubble {
+    background: var(--sa-green);
+    color: var(--sa-cream);
+    border-bottom-right-radius: 4px;
+  }
+
+  .msg-bubble strong { font-weight: 600; }
+
+  /* ── Result Cards inside chat ── */
+  .result-card {
+    margin-top: 12px;
+    background: var(--sa-white);
+    border: 1px solid rgba(0,0,0,0.08);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+  }
+
+  .result-card-head {
+    padding: 12px 16px;
+    background: rgba(45,74,45,0.04);
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .rc-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--sa-green);
+  }
+
+  .rc-badge {
+    font-size: 10.5px;
+    padding: 3px 10px;
+    border-radius: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .rc-badge.rx { background: rgba(192,57,43,0.1); color: var(--sa-red); }
+  .rc-badge.otc { background: rgba(74,138,74,0.1); color: var(--sa-green-light); }
+  .rc-badge.caution { background: rgba(230,126,34,0.1); color: var(--sa-orange); }
+
+  .result-card-body { padding: 14px 16px; }
+
+  .rc-row {
+    display: flex;
+    gap: 8px;
+    padding: 5px 0;
+    font-size: 13px;
+    border-bottom: 1px solid rgba(0,0,0,0.04);
+  }
+
+  .rc-row:last-child { border-bottom: none; }
+
+  .rc-label {
+    font-weight: 600;
+    color: var(--sa-text-light);
+    min-width: 110px;
+    flex-shrink: 0;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    padding-top: 1px;
+  }
+
+  .rc-value { color: var(--sa-text); line-height: 1.5; }
+
+  .warning-box {
+    margin-top: 10px;
+    padding: 10px 14px;
+    border-radius: var(--radius-sm);
+    background: rgba(192,57,43,0.06);
+    border-left: 3px solid var(--sa-red);
+    font-size: 13px;
+    color: var(--sa-text);
+    line-height: 1.5;
+  }
+
+  .warning-box .warn-label {
+    font-weight: 600;
+    color: var(--sa-red);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+  }
+
+  .info-box {
+    margin-top: 10px;
+    padding: 10px 14px;
+    border-radius: var(--radius-sm);
+    background: rgba(41,128,185,0.06);
+    border-left: 3px solid var(--sa-blue);
+    font-size: 13px;
+    color: var(--sa-text);
+    line-height: 1.5;
+  }
+
+  /* ── Input Bar ── */
+  .chat-input-area {
+    padding: 16px 24px;
+    border-top: 1px solid rgba(0,0,0,0.06);
+    background: rgba(245,240,228,0.3);
+  }
+
+  .input-row {
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+  }
+
+  .chat-input-wrap {
+    flex: 1;
+    position: relative;
+  }
+
+  .chat-input {
+    width: 100%;
+    padding: 13px 16px;
+    border: 2px solid var(--sa-cream-dark);
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    font-family: 'Source Sans 3', sans-serif;
+    resize: none;
+    outline: none;
+    transition: all 0.2s;
+    background: var(--sa-white);
+    min-height: 46px;
+    max-height: 120px;
+  }
+
+  .chat-input:focus {
+    border-color: var(--sa-green-mid);
+    box-shadow: 0 0 0 4px rgba(45,74,45,0.08);
+  }
+
+  .chat-input::placeholder { color: var(--sa-text-light); }
+
+  .send-btn {
+    width: 46px;
+    height: 46px;
+    border-radius: var(--radius-sm);
+    border: none;
+    background: var(--sa-green);
+    color: var(--sa-cream);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+
+  .send-btn:hover { background: var(--sa-green-mid); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(45,74,45,0.3); }
+
+  .input-hints {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+  }
+
+  .hint-chip {
+    padding: 5px 12px;
+    border-radius: 14px;
+    font-size: 12px;
+    background: var(--sa-white);
+    border: 1px solid var(--sa-cream-dark);
+    color: var(--sa-text-light);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .hint-chip:hover {
+    border-color: var(--sa-green-mid);
+    color: var(--sa-green);
+    background: rgba(45,74,45,0.04);
+  }
+
+  /* ── Disclaimer ── */
+  .disclaimer {
+    text-align: center;
+    font-size: 11.5px;
+    color: var(--sa-text-light);
+    padding: 12px 24px;
+    line-height: 1.5;
+    border-top: 1px solid rgba(0,0,0,0.04);
+  }
+
+  .disclaimer a {
+    color: var(--sa-green-mid);
+    text-decoration: none;
+    font-weight: 500;
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 900px) {
+    .main {
+      grid-template-columns: 1fr;
+      padding: 16px;
+    }
+    .sidebar { order: 2; }
+    .content { order: 1; }
+    .header-nav { display: none; }
+  }
+
+  @media (max-width: 480px) {
+    .header-inner { padding: 12px 16px; }
+    .logo-brand { font-size: 17px; }
+    .chat-messages { padding: 16px; }
+    .msg { max-width: 95%; }
+  }
+
+  /* ── Scrollbar ── */
+  .chat-messages::-webkit-scrollbar { width: 6px; }
+  .chat-messages::-webkit-scrollbar-track { background: transparent; }
+  .chat-messages::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.12); border-radius: 3px; }
+
+  /* ── Loading animation ── */
+  .typing-indicator {
+    display: flex;
+    gap: 4px;
+    padding: 8px 0;
+  }
+
+  .typing-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--sa-green-mid);
+    opacity: 0.4;
+    animation: typingBounce 1.4s infinite;
+  }
+
+  .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+  .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes typingBounce {
+    0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+    30% { transform: translateY(-6px); opacity: 1; }
+  }
+
+  /* ── Source tag ── */
+  .source-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 8px;
+    font-size: 11px;
+    color: var(--sa-text-light);
+    padding: 3px 8px;
+    background: rgba(0,0,0,0.03);
+    border-radius: 6px;
+  }
+
+  .source-tag a {
+    color: var(--sa-green-mid);
+    text-decoration: none;
+    font-weight: 500;
+  }
+
+  /* ── Two-Source Blocks ── */
+  .source-block {
+    margin-top: 12px;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    border: 1px solid rgba(0,0,0,0.08);
+  }
+
+  .source-block-header {
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .source-block-header .sb-icon {
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .source-block.sanoanimal .source-block-header {
+    background: linear-gradient(135deg, rgba(45,74,45,0.12) 0%, rgba(74,138,74,0.08) 100%);
+    color: var(--sa-green);
+    border-bottom: 1px solid rgba(45,74,45,0.12);
+  }
+
+  .source-block.sanoanimal .sb-icon {
+    background: var(--sa-green);
+    color: var(--sa-gold);
+  }
+
+  .source-block.fakten .source-block-header {
+    background: rgba(41,128,185,0.06);
+    color: var(--sa-blue);
+    border-bottom: 1px solid rgba(41,128,185,0.1);
+  }
+
+  .source-block.fakten .sb-icon {
+    background: var(--sa-blue);
+    color: var(--sa-white);
+  }
+
+  .source-block-body {
+    padding: 14px 16px;
+    font-size: 13.5px;
+    line-height: 1.65;
+    background: var(--sa-white);
+  }
+
+  .source-block.sanoanimal .source-block-body {
+    background: rgba(45,74,45,0.02);
+  }
+
+  .confidence-bar {
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    color: var(--sa-text-light);
+  }
+
+  .conf-track {
+    flex: 1;
+    height: 4px;
+    background: rgba(0,0,0,0.06);
+    border-radius: 2px;
+    overflow: hidden;
+    max-width: 120px;
+  }
+
+  .conf-fill {
+    height: 100%;
+    border-radius: 2px;
+  }
+
+  .conf-fill.high { background: var(--sa-green-light); width: 92%; }
+  .conf-fill.medium { background: var(--sa-gold-dim); width: 65%; }
+  .conf-fill.low { background: var(--sa-orange); width: 35%; }
+</style>
+</head>
+<body>
+
+<!-- ── Header ── -->
+<header class="header">
+  <div class="header-inner">
+    <div class="logo-area">
+      <div class="logo-icon">S</div>
+      <div class="logo-text">
+        <div class="logo-brand">Sanoanimal</div>
+        <div class="logo-sub">Therapeutencheck</div>
+      </div>
+    </div>
+    <div class="header-nav">
+      <button class="nav-pill active">Pharma-Check</button>
+      <button class="nav-pill">Giftpflanzen</button>
+      <button class="nav-pill">Wirkstoff-DB</button>
+      <button class="nav-pill">Dosierungen</button>
+      <div class="user-badge">
+        <div class="user-avatar">MK</div>
+        <span class="user-name">M. Kellner</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ── Main ── -->
+<div class="main">
+
+  <!-- ── Sidebar ── -->
+  <aside class="sidebar">
+
+    <!-- Search & Filter -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-header-icon green">🔍</div>
+        <div class="card-title">Schnellsuche</div>
+      </div>
+      <div class="card-body">
+        <div class="search-box">
+          <span class="search-icon">⌕</span>
+          <input type="text" class="search-input" placeholder="Wirkstoff, Präparat oder Indikation…" id="sideSearch">
+        </div>
+        <div class="category-grid">
+          <div class="cat-chip active"><span class="chip-icon">💊</span> Medikamente</div>
+          <div class="cat-chip"><span class="chip-icon">🧪</span> Wirkstoffe</div>
+          <div class="cat-chip"><span class="chip-icon">🌿</span> Giftpflanzen</div>
+          <div class="cat-chip"><span class="chip-icon">⚡</span> Wechselwirkungen</div>
+          <div class="cat-chip"><span class="chip-icon">📋</span> Indikationen</div>
+          <div class="cat-chip"><span class="chip-icon">⚠️</span> Kontraindikationen</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Queries -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-header-icon gold">⏱</div>
+        <div class="card-title">Letzte Abfragen</div>
+      </div>
+      <div class="card-body" style="padding: 8px 12px 12px;">
+        <div class="quick-links">
+          <a class="quick-link" onclick="insertQuery('Phenylbutazon Dosierung Pferd')">
+            <span class="ql-dot green"></span>
+            <span class="ql-text">Phenylbutazon Dosierung Pferd</span>
+            <span class="ql-badge">vor 2h</span>
+          </a>
+          <a class="quick-link" onclick="insertQuery('Jakobskreuzkraut Toxizität')">
+            <span class="ql-dot red"></span>
+            <span class="ql-text">Jakobskreuzkraut Toxizität</span>
+            <span class="ql-badge">gestern</span>
+          </a>
+          <a class="quick-link" onclick="insertQuery('Ivermectin Kontraindikationen Fohlen')">
+            <span class="ql-dot orange"></span>
+            <span class="ql-text">Ivermectin Kontraindikationen Fohlen</span>
+            <span class="ql-badge">Mo</span>
+          </a>
+          <a class="quick-link" onclick="insertQuery('Dexamethason Wechselwirkungen')">
+            <span class="ql-dot blue"></span>
+            <span class="ql-text">Dexamethason Wechselwirkungen</span>
+            <span class="ql-badge">Mo</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Favorites -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-header-icon blue">⭐</div>
+        <div class="card-title">Merkliste</div>
+      </div>
+      <div class="card-body" style="padding: 8px 12px 12px;">
+        <div class="quick-links">
+          <a class="quick-link">
+            <span class="ql-dot green"></span>
+            <span class="ql-text">Equidenpräparate CH (A-Z)</span>
+          </a>
+          <a class="quick-link">
+            <span class="ql-dot gold"></span>
+            <span class="ql-text">NSAID Vergleichstabelle Pferd</span>
+          </a>
+          <a class="quick-link">
+            <span class="ql-dot red"></span>
+            <span class="ql-text">Giftpflanzen-Kompendium</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+  </aside>
+
+  <!-- ── Content ── -->
+  <div class="content">
+
+    <div class="chat-area">
+      <div class="chat-header">
+        <div class="chat-header-left">
+          <div class="chat-mode-indicator">
+            <span class="pulse-dot"></span>
+            Pharma-Check aktiv
+          </div>
+          <span style="font-size: 12px; color: var(--sa-text-light);">Spezies: Equiden · Quellen: Sanoanimal + CliniPharm</span>
+        </div>
+        <div class="chat-header-actions">
+          <button class="icon-btn" title="Verlauf exportieren">📋</button>
+          <button class="icon-btn" title="Neuer Check">✨</button>
+          <button class="icon-btn" title="Einstellungen">⚙</button>
+        </div>
+      </div>
+
+      <div class="chat-messages" id="chatMessages">
+
+        <!-- System Welcome -->
+        <div class="msg assistant">
+          <div class="msg-avatar system">S</div>
+          <div class="msg-bubble">
+            Willkommen im <strong>Sanoanimal Therapeutencheck</strong>. Ich unterstütze dich bei veterinärpharmakologischen Fragen zu Wirkstoffen, Dosierungen, Kontraindikationen und Giftpflanzen — mit Fokus auf Equiden.<br><br>
+            Stelle eine Frage oder wähle eine Kategorie in der Seitenleiste.
+          </div>
+        </div>
+
+        <!-- Example User Query -->
+        <div class="msg user">
+          <div class="msg-avatar human">MK</div>
+          <div class="msg-bubble">
+            Welche Dosierung hat Phenylbutazon beim Pferd und worauf muss ich bei längerer Gabe achten?
+          </div>
+        </div>
+
+        <!-- Example System Response with Two-Source Architecture -->
+        <div class="msg assistant">
+          <div class="msg-avatar system">S</div>
+          <div class="msg-bubble">
+            Hier die Übersicht zu <strong>Phenylbutazon</strong> beim Pferd:
+
+            <!-- SOURCE 1: Sanoanimal Praxis-Einordnung -->
+            <div class="source-block sanoanimal">
+              <div class="source-block-header">
+                <span class="sb-icon">S</span>
+                Sanoanimal Praxis-Einordnung
+              </div>
+              <div class="source-block-body">
+                <strong>Kritische Bewertung:</strong> Phenylbutazon ist das am häufigsten eingesetzte NSAID beim Pferd — aber in der therapeutischen Praxis sehen wir regelmäßig Probleme, die in Herstellertexten verharmlost werden:<br><br>
+                • <strong>Magengesundheit:</strong> Schon ab 5 Tagen Dauermedikation beobachten wir bei ca. 40% der Pferde erste Anzeichen von Magenreizung (Kotwasser, Appetitminderung). Das steht so nicht im Beipackzettel.<br>
+                • <strong>Maskierung:</strong> Bute maskiert Schmerzen — ein Pferd, das sich unter Bute gut bewegt, kann trotzdem massive strukturelle Schäden haben. Unbedingt Bewegungsanalyse VOR Absetzung.<br>
+                • <strong>Sanoanimal-Empfehlung:</strong> Begleitend Magenschutz (Omeprazol), Futterrationscheck auf magensäure-puffernde Komponenten, Dosisreduktion auf Erhaltung so früh wie möglich.
+                <div class="confidence-bar">
+                  <span>Praxis-Evidenz</span>
+                  <div class="conf-track"><div class="conf-fill high"></div></div>
+                  <span>Hoch — 600+ Therapeuten-Netzwerk</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- SOURCE 2: Fakten-Layer -->
+            <div class="source-block fakten">
+              <div class="source-block-header">
+                <span class="sb-icon">F</span>
+                Fakten — CliniPharm / Wissenschaftliche Literatur
+              </div>
+              <div class="source-block-body">
+                <div class="result-card" style="border: none; margin: 0;">
+                  <div class="result-card-body" style="padding: 0;">
+                    <div class="rc-row">
+                      <span class="rc-label">Wirkstoffklasse</span>
+                      <span class="rc-value">NSAID (nicht-steroidales Antiphlogistikum)</span>
+                    </div>
+                    <div class="rc-row">
+                      <span class="rc-label">Dosierung</span>
+                      <span class="rc-value"><strong>4.4 mg/kg KGW</strong> p.o. oder i.v., 1–2× täglich. Erhaltung: 2.2 mg/kg 1× tgl.</span>
+                    </div>
+                    <div class="rc-row">
+                      <span class="rc-label">HWZ Plasma</span>
+                      <span class="rc-value">3.5–10 Stunden (Pferd)</span>
+                    </div>
+                    <div class="rc-row">
+                      <span class="rc-label">Metabolismus</span>
+                      <span class="rc-value">Hepatisch → Oxyphenbutazon (aktiv); renale Elimination</span>
+                    </div>
+                    <div class="rc-row">
+                      <span class="rc-label">Proteinbindung</span>
+                      <span class="rc-value">&gt; 95% — Wechselwirkungspotential beachten</span>
+                    </div>
+                    <div class="rc-row">
+                      <span class="rc-label">Zulassung</span>
+                      <span class="rc-value"><span class="rc-badge rx" style="font-size:10px;">Rx</span> In EU bei lebensmittelliefernden Equiden verboten</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="confidence-bar">
+                  <span>Datenqualität</span>
+                  <div class="conf-track"><div class="conf-fill high"></div></div>
+                  <span>Hoch — CliniPharm UZH</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="warning-box">
+              <div class="warn-label">⚠ Kontraindikationen</div>
+              Nicht kombinieren mit anderen NSAID (Flunixin, Meloxicam) — additives Ulkusrisiko. Vorsicht bei dehydrierten Patienten (Nephrotoxizität). Regelmäßige Blutbildkontrolle bei Gabe &gt; 7 Tage.
+            </div>
+
+            <div class="source-tag">
+              📚 <a href="#">Sanoanimal Wissensbasis</a> · <a href="#">CliniPharm UZH</a> · Letzte Aktualisierung: März 2026
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Input -->
+      <div class="chat-input-area">
+        <div class="input-row">
+          <div class="chat-input-wrap">
+            <textarea class="chat-input" id="chatInput" rows="1" placeholder="Frage zu Wirkstoff, Dosierung, Kontraindikation oder Giftpflanze…" onkeydown="handleKey(event)"></textarea>
+          </div>
+          <button class="send-btn" onclick="sendMessage()" title="Absenden">➤</button>
+        </div>
+        <div class="input-hints">
+          <span class="hint-chip" onclick="insertQuery('Ivermectin Fohlen Sicherheit')">Ivermectin Fohlen</span>
+          <span class="hint-chip" onclick="insertQuery('Eichenlaub Vergiftung Pferd')">Eichenlaub Vergiftung</span>
+          <span class="hint-chip" onclick="insertQuery('Dexamethason vs Prednisolon Pferd')">Dexa vs Prednisolon</span>
+          <span class="hint-chip" onclick="insertQuery('Omeprazol Dosierung Magenulkus Pferd')">Omeprazol Dosierung</span>
+        </div>
+      </div>
+
+      <div class="disclaimer">
+        Alle Angaben ohne Gewähr. Dieses Tool ersetzt keine tierärztliche Diagnose oder Beratung. 
+        Datenquellen: Sanoanimal Wissensbasis · <a href="https://www.vetpharm.uzh.ch" target="_blank">CliniPharm/CliniTox UZH</a> · Fachliteratur
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // ── Interactive Prototype Logic ──
+
+  // Category chip toggle
+  document.querySelectorAll('.cat-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      document.querySelectorAll('.cat-chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+    });
+  });
+
+  // Nav toggle
+  document.querySelectorAll('.nav-pill').forEach(pill => {
+    pill.addEventListener('click', () => {
+      document.querySelectorAll('.nav-pill').forEach(p => p.classList.remove('active'));
+      pill.classList.add('active');
+    });
+  });
+
+  // Insert query from hint or history
+  function insertQuery(text) {
+    document.getElementById('chatInput').value = text;
+    document.getElementById('chatInput').focus();
+  }
+
+  // Handle enter key
+  function handleKey(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  }
+
+  // Send message (prototype: echo + simulated response)
+  function sendMessage() {
+    const input = document.getElementById('chatInput');
+    const text = input.value.trim();
+    if (!text) return;
+
+    const messages = document.getElementById('chatMessages');
+
+    // User message
+    const userMsg = document.createElement('div');
+    userMsg.className = 'msg user';
+    userMsg.innerHTML = `
+      <div class="msg-avatar human">MK</div>
+      <div class="msg-bubble">${escapeHtml(text)}</div>
+    `;
+    messages.appendChild(userMsg);
+
+    input.value = '';
+    input.style.height = 'auto';
+    messages.scrollTop = messages.scrollHeight;
+
+    // Typing indicator
+    const typing = document.createElement('div');
+    typing.className = 'msg assistant';
+    typing.id = 'typingMsg';
+    typing.innerHTML = `
+      <div class="msg-avatar system">S</div>
+      <div class="msg-bubble">
+        <div class="typing-indicator">
+          <div class="typing-dot"></div>
+          <div class="typing-dot"></div>
+          <div class="typing-dot"></div>
+        </div>
+      </div>
+    `;
+    messages.appendChild(typing);
+    messages.scrollTop = messages.scrollHeight;
+
+    // Simulated response after delay
+    setTimeout(() => {
+      typing.remove();
+      const response = document.createElement('div');
+      response.className = 'msg assistant';
+      response.innerHTML = `
+        <div class="msg-avatar system">S</div>
+        <div class="msg-bubble">
+          Ich suche in der Datenbank nach <strong>${escapeHtml(text)}</strong>…<br><br>
+          <em style="color: var(--sa-text-light);">[ Prototyp-Modus — Im Produktivbetrieb würde hier die Antwort aus der Sanoanimal-Wissensbasis und/oder CliniPharm-Daten erscheinen, inkl. strukturierter Ergebniskarten. ]</em>
+          <div class="source-tag">
+            📚 Quelle: Wird im Produktivbetrieb automatisch zugeordnet
+          </div>
+        </div>
+      `;
+      messages.appendChild(response);
+      messages.scrollTop = messages.scrollHeight;
+    }, 1800);
+  }
+
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  // Auto-resize textarea
+  document.getElementById('chatInput').addEventListener('input', function() {
+    this.style.height = 'auto';
+    this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+  });
+</script>
+
+</body>
+</html>

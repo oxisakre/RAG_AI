@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Sanoanimal Anatomie-Assistent</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Source+Sans+3:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; overflow: hidden; }
+  body {
+    font-family: 'Source Sans 3', -apple-system, BlinkMacSystemFont, sans-serif;
+    color: #1a3c34;
+    background: linear-gradient(170deg, #f8f5f0 0%, #eee9e0 50%, #e8e2d8 100%);
+  }
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #c4a97d50; border-radius: 6px; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes slideUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes slideRight { from{opacity:0;transform:translateX(-20px)} to{opacity:1;transform:translateX(0)} }
+  @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.06)} }
+  @keyframes typing { 0%,60%,100%{opacity:.25} 30%{opacity:1} }
+
+  #app { height:100vh; display:flex; flex-direction:column; overflow:hidden; }
+
+  .sa-header {
+    background: linear-gradient(135deg, #1a3c34 0%, #264f43 40%, #1a3c34 100%);
+    padding: 10px 20px; border-bottom: 3px solid #c4a97d; flex-shrink: 0; z-index: 100;
+  }
+  .sa-header-inner { max-width:1200px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; }
+  .sa-logo-area { display:flex; align-items:center; gap:10px; }
+  .sa-logo-mark {
+    width:34px; height:34px; border-radius:8px;
+    background: linear-gradient(135deg, #c4a97d, #d8c49a);
+    color:#1a3c34; font-family:'Playfair Display',Georgia,serif;
+    font-weight:700; font-size:13px; display:flex; align-items:center; justify-content:center; letter-spacing:1px;
+  }
+  .sa-logo-title { font-family:'Playfair Display',Georgia,serif; font-size:16px; font-weight:700; color:#fff; line-height:1.2; }
+  .sa-logo-sub { font-size:10.5px; color:#c4a97d; font-weight:400; letter-spacing:.4px; }
+  .sa-header-badge { font-size:10.5px; color:#c4a97d; padding:3px 10px; border:1px solid #c4a97d35; border-radius:20px; font-weight:500; white-space:nowrap; }
+
+  .sa-controls { max-width:1200px; width:100%; margin:0 auto; padding:10px 16px; display:flex; flex-wrap:wrap; gap:12px; align-items:center; flex-shrink:0; }
+  .sa-ctrl-group { display:flex; align-items:center; gap:6px; }
+  .sa-ctrl-label { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1.2px; color:#8a7b6b; min-width:42px; }
+  .sa-pills { display:flex; gap:4px; flex-wrap:wrap; }
+  .sa-pill {
+    padding:5px 13px; border-radius:20px; border:1.5px solid #d4c4a8; background:transparent;
+    color:#6a7b6e; font-size:11.5px; font-weight:500; cursor:pointer; transition:all .2s;
+    font-family:'Source Sans 3',sans-serif; white-space:nowrap;
+  }
+  .sa-pill:hover { border-color:#1a3c34; color:#1a3c34; }
+  .sa-pill.active { background:#1a3c34; color:#fff; border-color:#1a3c34; box-shadow:0 2px 8px #1a3c3430; }
+  .sa-layer-pill {
+    padding:5px 11px; border-radius:20px; border:1.5px solid #d4c4a8; background:transparent;
+    color:#6a7b6e; font-size:11.5px; font-weight:500; cursor:pointer; transition:all .2s;
+    font-family:'Source Sans 3',sans-serif; display:flex; align-items:center; gap:4px; white-space:nowrap;
+  }
+  .sa-layer-pill:hover { border-color:#888; }
+  .sa-layer-pill.active { color:#fff; border-color:transparent; }
+  .sa-layer-pill.active.lk { background:linear-gradient(135deg,#d4ba8a,#c4a97d); box-shadow:0 2px 8px #c4a97d50; }
+  .sa-layer-pill.active.lm { background:linear-gradient(135deg,#c94c4c,#a33a3a); box-shadow:0 2px 8px #c94c4c50; }
+  .sa-layer-pill.active.lf { background:linear-gradient(135deg,#6b5b95,#554880); box-shadow:0 2px 8px #6b5b9550; }
+  .sa-layer-pill.active.lo { background:linear-gradient(135deg,#d4a76a,#b88d50); box-shadow:0 2px 8px #d4a76a50; }
+
+  .sa-main { flex:1; min-height:0; max-width:1200px; width:100%; margin:0 auto; padding:0 16px 16px; display:flex; gap:16px; overflow:hidden; }
+  .sa-model-area { flex:1; min-width:0; display:flex; flex-direction:column; transition:all .3s; }
+  .sa-model-area.with-info { flex:0 0 56%; }
+  .sa-model-card { flex:1; min-height:0; background:#fff; border-radius:14px; padding:12px; box-shadow:0 3px 20px rgba(26,60,52,.06); border:1px solid #e8e2d8; display:flex; flex-direction:column; overflow:hidden; }
+  .sa-model-viewport { flex:1; min-height:0; background:radial-gradient(ellipse at 50% 40%,#f8f5f008,#f4efe8); border-radius:10px; display:flex; justify-content:center; align-items:center; padding:8px; overflow:hidden; }
+  .sa-model-viewport svg { width:100%; height:100%; max-height:100%; }
+  .sa-model-hint { text-align:center; margin-top:8px; font-size:12px; color:#8a7b6b; font-weight:500; flex-shrink:0; }
+
+  .sa-region { cursor:pointer; transition:all .25s ease; opacity:.72; }
+  .sa-region:hover { opacity:.9; filter:brightness(1.05); }
+  .sa-region.selected { opacity:1; }
+  .sa-region-label { font-family:'Source Sans 3',sans-serif; font-size:10px; font-weight:600; fill:#1a3c34; pointer-events:none; user-select:none; }
+
+  .sa-info { flex:0 0 42%; background:#fff; border-radius:14px; box-shadow:0 3px 20px rgba(26,60,52,.06); border:1px solid #e8e2d8; display:none; flex-direction:column; overflow:hidden; animation:slideRight .3s ease; }
+  .sa-info.visible { display:flex; }
+  .sa-info-head { padding:14px 18px 10px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #f0ebe4; flex-shrink:0; }
+  .sa-info-title-wrap { display:flex; align-items:center; gap:6px; }
+  .sa-info-icon { font-size:22px; }
+  .sa-info-title { font-family:'Playfair Display',Georgia,serif; font-size:17px; font-weight:700; color:#1a3c34; }
+  .sa-layer-badge { font-size:10.5px; font-weight:600; color:#8a7b6b; background:#f8f5f0; padding:3px 10px; border-radius:12px; display:flex; align-items:center; gap:3px; white-space:nowrap; flex-shrink:0; }
+  .sa-info-body { flex:1; min-height:0; overflow-y:auto; padding:16px 18px; }
+  .sa-info-text { font-size:13.5px; line-height:1.75; color:#3a4a3e; animation:fadeIn .3s ease; }
+  .sa-info-actions { padding:10px 18px 14px; display:flex; gap:8px; border-top:1px solid #f0ebe4; flex-shrink:0; }
+  .sa-btn-chat { flex:1; padding:9px 14px; background:linear-gradient(135deg,#1a3c34,#2a5c4a); color:#fff; border:none; border-radius:10px; font-size:12.5px; font-weight:600; cursor:pointer; font-family:'Source Sans 3',sans-serif; }
+  .sa-btn-chat:hover { box-shadow:0 3px 12px #1a3c3440; }
+  .sa-btn-close-info { padding:9px 14px; background:#f8f5f0; color:#8a7b6b; border:1px solid #e8e2d8; border-radius:10px; font-size:12.5px; font-weight:500; cursor:pointer; font-family:'Source Sans 3',sans-serif; }
+
+  .sa-fab { position:fixed; bottom:20px; right:20px; width:52px; height:52px; border-radius:50%; background:linear-gradient(135deg,#1a3c34,#2a5c4a); border:2.5px solid #c4a97d; box-shadow:0 4px 18px rgba(26,60,52,.3); cursor:pointer; display:flex; align-items:center; justify-content:center; z-index:80; font-size:20px; animation:pulse 3s infinite; }
+  .sa-fab:hover { transform:scale(1.08); }
+
+  .sa-chat { position:fixed; bottom:20px; right:20px; width:min(395px,calc(100vw - 28px)); height:min(540px,calc(100vh - 90px)); background:#fff; border-radius:18px; box-shadow:0 8px 40px rgba(26,60,52,.2); border:1px solid #ddd; display:none; flex-direction:column; z-index:200; overflow:hidden; animation:slideUp .3s ease; }
+  .sa-chat.visible { display:flex; }
+  .sa-chat-head { padding:12px 16px; background:linear-gradient(135deg,#1a3c34,#2a5c4a); color:#fff; display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #c4a97d; flex-shrink:0; }
+  .sa-chat-head-left { display:flex; align-items:center; gap:7px; }
+  .sa-chat-head-title { font-family:'Playfair Display',Georgia,serif; font-weight:700; font-size:14px; }
+  .sa-chat-close { background:none; border:none; color:#c4a97d; font-size:18px; cursor:pointer; padding:3px 7px; border-radius:6px; }
+  .sa-chat-msgs { flex:1; min-height:0; overflow-y:auto; padding:14px; display:flex; flex-direction:column; gap:9px; background:#faf8f5; }
+  .sa-chat-welcome { text-align:center; padding:28px 14px; animation:fadeIn .5s ease; }
+  .sa-chat-welcome-icon { font-size:30px; margin-bottom:10px; }
+  .sa-chat-welcome-title { font-family:'Playfair Display',Georgia,serif; font-size:15px; font-weight:600; color:#1a3c34; margin-bottom:6px; }
+  .sa-chat-welcome-sub { font-size:12.5px; color:#5a6b5e; line-height:1.5; }
+  .sa-msg { max-width:84%; padding:9px 13px; border-radius:14px; animation:fadeIn .2s ease; font-size:13px; line-height:1.6; word-wrap:break-word; white-space:pre-wrap; }
+  .sa-msg.user { align-self:flex-end; background:linear-gradient(135deg,#1a3c34,#2a5c4a); color:#fff; border-bottom-right-radius:4px; }
+  .sa-msg.assistant { align-self:flex-start; background:#fff; color:#1a3c34; border:1px solid #e8e2d8; border-bottom-left-radius:4px; }
+  .sa-typing { display:flex; gap:5px; padding:3px 0; }
+  .sa-typing span { width:7px; height:7px; border-radius:50%; background:#c4a97d; display:inline-block; animation:typing 1.4s infinite; }
+  .sa-typing span:nth-child(2) { animation-delay:.2s; }
+  .sa-typing span:nth-child(3) { animation-delay:.4s; }
+  .sa-chat-input-area { padding:10px 12px; border-top:1px solid #e8e2d8; display:flex; gap:7px; background:#fff; flex-shrink:0; }
+  .sa-chat-input { flex:1; padding:9px 13px; border-radius:12px; border:1.5px solid #e8e2d8; font-size:13.5px; outline:none; font-family:'Source Sans 3',sans-serif; background:#faf8f5; color:#1a3c34; }
+  .sa-chat-input:focus { border-color:#c4a97d; }
+  .sa-chat-send { width:40px; height:40px; border-radius:11px; border:none; background:linear-gradient(135deg,#1a3c34,#2a5c4a); color:#fff; font-size:17px; cursor:pointer; display:flex; align-items:center; justify-content:center; font-family:'Source Sans 3',sans-serif; }
+  .sa-chat-send:disabled { opacity:.45; cursor:default; }
+
+  .sa-quick-questions { display:flex; flex-wrap:wrap; gap:6px; padding:0 14px 10px; flex-shrink:0; }
+  .sa-qq { padding:6px 12px; border-radius:16px; border:1px solid #e0d8cc; background:#faf8f5; color:#5a6b5e; font-size:11.5px; cursor:pointer; font-family:'Source Sans 3',sans-serif; transition:all .2s; white-space:nowrap; }
+  .sa-qq:hover { background:#1a3c34; color:#fff; border-color:#1a3c34; }
+
+  @media (max-width:767px) {
+    .sa-main { flex-direction:column; padding-bottom:0; }
+    .sa-model-area.with-info { flex:1 !important; }
+    .sa-info.visible { position:fixed; bottom:0; left:0; right:0; border-radius:18px 18px 0 0; max-height:65vh; z-index:90; box-shadow:0 -4px 30px rgba(26,60,52,.15); animation:slideUp .3s ease; }
+    .sa-info-handle { display:flex !important; justify-content:center; padding:8px 0 2px; cursor:pointer; }
+    .sa-info-handle-bar { width:36px; height:4px; border-radius:4px; background:#d4c4a8; }
+    .sa-header-badge { display:none; }
+    .sa-layer-pill .lbl { display:none; }
+  }
+  @media (min-width:768px) {
+    .sa-info-handle { display:none !important; }
+  }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+// ═══════════════════════════════════════════════
+// SANOANIMAL ANATOMIE-ASSISTENT — Standalone HTML
+// ═══════════════════════════════════════════════
+
+// All knowledge base texts use backtick strings to avoid quote-escaping issues
+const ANATOMY_KB = {
+  kopf: {
+    title: `Kopf & Sch\u00e4del`, icon: "\u{1F9E0}",
+    layers: {
+      knochen: `Der Pferdeschädel besteht aus 29 beweglich verbundenen Knochen mit nur einem echten Gelenk \u2013 dem Kiefergelenk. Die feinen bindegewebigen Nähte (Suturen) erlauben passive Beweglichkeit. An der Crista nuchae (harte Kante zwischen den Ohren) setzt das Nackenrückenband an. Das Nasenbein hat einen freien rostralen Anteil, der bei unsachgemäßem Halfter leicht brechen kann. Die Stirnhöhlen wärmen und befeuchten die Atemluft. Das Siebbein filtert Staub und Krankheitserreger. Im Tränenbein (Os lacrimale) verläuft der Tränenkanal. Die Jochleiste ist Ansatzpunkt des M. masseter \u2013 dem stärksten Muskel des Körpers mit bis zu 5 Tonnen Presskraft.`,
+      muskeln: `Der M. masseter an der Jochleiste ist der stärkste Muskel im Pferdekörper (bis zu 5 Tonnen Presskraft). Am Kopf setzen außerdem wichtige Halsmuskeln an: Der M. longissimus capitis et atlantis streckt bei beidseitiger Aktivierung Genick und Hals, bei einseitiger bewirkt er Drehung und Seitwärtsbiegung. Der M. sternocephalicus beugt beidseitig das Genick. Der M. brachiocephalicus führt bei Kopffixierung die Vordergliedmaße vor und ist der Fluchtinitiator.`,
+      organe: `Die Augen sitzen seitlich und ermöglichen fast 360\u00b0 Rundumsicht \u2013 der tote Winkel liegt nur unmittelbar vor und hinter dem Pferd. Die waagerechte Pupille bietet ein größeres Horizontbild. Das Gleitsichtbrillen-Prinzip: Kopf gesenkt = Nahsicht (Futter), Kopf erhoben = Fernsicht (Feinde). Im Siebbein sitzen die Riechrezeptoren \u2013 Pferde nutzen ihren Geruchssinn intensiver als Menschen. Geschmacksknospen auf der Zunge unterscheiden süß, sauer, salzig, bitter. Zähne: Milch- zu Bleibend-Wechsel im 3.\u20135. Lebensjahr. Raspelgebiss zerkleinert Futter auf unter 2 mm. Zahnabnutzung ca. 2\u20133 mm/Jahr.`,
+      faszien: `Die Kopffaszien verbinden die verschiedenen Knochen des Schädels und umhüllen die Kaumuskulatur. Die temporale Faszie bedeckt den M. temporalis an der Schläfe. Einschränkungen der Suturbeweglichkeit durch zu enge Stirn- oder Nasenriemen können über die faszialen Strukturen weitreichende Auswirkungen haben und zu Kopfschmerzen beim Pferd führen.`
+    }
+  },
+  hals: {
+    title: `Hals & Genick`, icon: "\u{1F992}",
+    layers: {
+      knochen: `Der Hals besteht aus 7 Halswirbeln (wie bei fast allen Säugetieren). Der Atlas (1. HW) trägt den Kopf und hat typische Atlasflügel. Der Axis (2. HW) hat einen zahnförmigen Fortsatz \u2013 zusammen mit dem Atlas bildet er ein Zapfengelenk für die Kopfdrehung. Das Genick ist ein Ellipsoidgelenk zwischen Schädel und Atlas und ermöglicht Nicken, Schütteln und Drehen. Die Halswirbel 3\u20137 sind rund und kompakt, ohne lange Fortsätze \u2013 das ermöglicht die große Beweglichkeit des Halses.`,
+      muskeln: `M. longissimus capitis et atlantis: Beidseitig Strecker von Genick/Hals, einseitig Dreher/Seitwärtsbieger. M. sternocephalicus: Beidseitig Beuger. M. brachiocephalicus: Vielseitigster Halsmuskel \u2013 führt Vordergliedmaße vor, bestimmt Gangart und Gangmaß, ist Fluchtinitiator. M. scalenus: Unterstützt Einatmung. M. trapezius: Streckt Hals, bewegt Schulterblatt. M. splenius: Halsstrecker. M. spinalis cervicis: Strecker der Hals-/Brustwirbelsäule.`,
+      organe: `Durch den Hals verlaufen lebenswichtige Strukturen: Die Halsschlagader (Arteria carotis) führt sauerstoffreiches Blut zum Kopf. Die Speiseröhre \u2013 ein muskulöser Schlauch ohne Knorpelspangen \u2013 transportiert das Futter per Peristaltik Richtung Magen. Die Luftröhre (Trachea) wird durch Knorpelspangen offengehalten und ist innen mit Flimmerepithel ausgekleidet. Der Kehlkopf bildet die Öffnung zu Speiseröhre und Luftröhre \u2013 der Kehldeckel verschließt die Luftröhre beim Schlucken. Pferde können nur durch die Nase atmen.`,
+      faszien: `Die Halsfaszien bilden mehrere Schichten, die die verschiedenen Muskelgruppen und Strukturen des Halses umhüllen und voneinander trennen. Das Nackenrückenband (Ligamentum nuchae) zieht sich von der Crista nuchae über die gesamte Wirbelsäule bis zum Kreuzbein und bildet zusammen mit der Rückenmuskulatur die Gegenspannung zur Bauchmuskulatur.`
+    }
+  },
+  schulter: {
+    title: `Schulter & Vorhand`, icon: "\u{1F4AA}",
+    layers: {
+      knochen: `Das Pferd hat kein Schlüsselbein \u2013 der Rumpf ist nicht knöchern mit dem Vorderbein verbunden. Der Brustkorb hängt elastisch über Muskeln und Faszien zwischen den Schulterblättern. Das Schulterblatt (Os scapula) ist ein flacher Knochen mit einer dorsalen Knorpelkappe (darf nicht gequetscht werden). Das Schultergelenk (Buggelenk) ist ein Kugelgelenk. Der Oberarm (Os humerus) ist ein kurzer, dicker Röhrenknochen. Das Ellbogengelenk ist ein Scharniergelenk mit Schnappwirkung.`,
+      muskeln: `M. serratus ventralis thoracis et cervicis: Der sogenannte gezahnte Muskelgurt trägt den Rumpf zwischen den Schulterblättern. Diagnoserelevanz: Kraniale Delle + kaudale Beule vor dem Schulterblatt = vorhandlastiges Pferd; umgekehrt = über den Rücken gearbeitetes Pferd. M. pectoralis ascendens + M. subclavius = pektoraler Muskelgurt. M. trapezius, M. rhomboideus, M. latissimus dorsi befestigen das Schulterblatt dorsal. Protraktion und Retraktion werden durch verschiedene Muskelgruppen gesteuert.`,
+      organe: `Im Bereich der Vorhand befinden sich: Das Herz \u2013 kranial ventral im Brustkorb, zwischen den Vorderbeinen hinter dem Brustbein, abhörbar auf der linken Seite. Gewicht ca. 0,6\u20131% der Körpermasse (Großpferd ca. 5 kg). Ruhepuls ca. 36/min. Ca. 40% der Pferde haben einen Herzfehler. Die Lunge füllt den Brustkorb aus. Das Lymphsystem (Kehlgangslymphknoten) schwillt bei Erkältungen an.`,
+      faszien: `Die Fascia superficialis und die tiefere Fascia profunda umhüllen den gesamten Schultergürtel. Da kein Schlüsselbein vorhanden ist, wird die Aufhängung des Rumpfes zwischen den Schulterblättern wesentlich durch myofasziale Strukturen gewährleistet. Diese Rumpftragevorrichtung ist entscheidend für die Stoßdämpfung. Der Sattel muss dem Schulterblatt \u00b12 cm Spielraum nach kranial/kaudal lassen \u2013 sonst wird das Pferd zum Schenkelgänger.`
+    }
+  },
+  ruecken: {
+    title: `Rücken & Wirbelsäule`, icon: "\u{1F9B4}",
+    layers: {
+      knochen: `18 Brustwirbel: Jeder trägt ein Rippenpaar \u2192 Brustkorb (schützt Herz und Lunge). Unterschiedlich lange Dornfortsätze bilden den Widerrist. 6 Lendenwirbel (Araber meist nur 5): Sehr breite Querfortsätze, nur über Muskeln gehalten. Kreuzbein: Verschmolzene Kreuzwirbel \u2192 Verbindung zum Becken über ISG. Erst mit 4\u20135 Jahren vollständig verknöchert! Facettengelenke (Schiebegelenke) verbinden die Wirbel. Wirbelkanal enthält das Rückenmark bis zum Lendenbereich.`,
+      muskeln: `M. longissimus: Strecker und Seitwärtsbieger der Wirbelsäule. M. iliocostalis: Atmung + Seitwärtsbiegung. Mm. multifidii: Gelenkfixierung und Propriozeption. Zusammen = M. erector spinae. M. obliquus externus/internus abdominis: Beuger, Dreher. M. rectus abdominis: Beuger BWS/LWS. M. transversus abdominis: Bauchspannung. M. iliopsoas: Beidseitig = Setzen des Pferdes. Flexion des Rückens = Ziel der Reiterei; Extension = Wegdrücken.`,
+      organe: `Geschützt durch den Brustkorb: Herz und Lunge. Die Leber angeschmiegt ans Zwerchfell (wird durch Atembewegung massiert \u2192 gute Durchblutung). Die Milz links kaudal der Leber (Blutspeicher + Filter). Die Nieren unterhalb der Wirbelsäule in der Lendenregion (links bohnenförmig, rechts herzförmig). Ca. 25% des Blutvolumens fließen durch die Nieren. Das Zwerchfell trennt Brust- und Bauchhöhle \u2013 wichtigster Atemmuskel.`,
+      faszien: `Die thorakolumbale Faszie ist eine der wichtigsten Faszienstrukturen. Sie verbindet Rücken, Bauchmuskulatur und Schultergürtel. Das Nackenrückenband zieht sich über die gesamte Wirbelsäule bis zum Kreuzbein und bildet die Gegenspannung zur Bauchmuskulatur \u2013 essentiell für die korrekte Versammlungsarbeit.`
+    }
+  },
+  bauch: {
+    title: `Bauch & Verdauung`, icon: "\u{1FAC1}",
+    layers: {
+      knochen: `Die knöchernen Strukturen des Bauches: Die letzten Rippen (Rippenbögen) schützen den Bauchraum teilweise. Die Lendenwirbelsäule mit breiten Querfortsätzen bildet das Dach. Es gibt keine vollständige knöcherne Ummantelung \u2013 der Bauchraum wird hauptsächlich durch Muskeln und Faszien geformt.`,
+      muskeln: `M. obliquus externus abdominis: Beidseitig Beugung BWS/LWS, einseitig Seitwärtsbiegung/Drehung. M. obliquus internus abdominis: Synergist bei Biegung, Antagonist bei Drehung. M. rectus abdominis: Hauptbeuger. M. transversus abdominis: Bauchspannung, Antagonist zur Rückenmuskulatur. M. iliopsoas: Setzen des Pferdes + Hüftbeugung. Bei Dampfrinne = deutlich ausgeprägte Bauchmuskulatur durch chronischen Husten.`,
+      organe: `Magen: Relativ klein, ständige Magensäureproduktion \u2013 bei mehr als 4 Stunden ohne Raufutter drohen Magengeschwüre. Pferd kann nicht erbrechen! Dünndarm: 20\u201330 m lang, 40\u201350 L Fassungsvermögen, Passagezeit 1,5\u20132 h. Blinddarm: ca. 1 m, über 30 L \u2013 bakterielle Celluloseverdauung (Fohlen fressen Kot der Mutter!). Grimmdarm: bis 10 m, 50\u201360 L, viele Wendungen \u2192 Verstopfungs-/Sandkoliken. Leber: Entgiftung (schwächer als Hund!), Glucoseproduktion, Blutspeicher. Pankreas: Insulin/Glukagon. Pro kg Heu: bis 5 L Speichel.`,
+      faszien: `Das Bauchfell (Peritoneum) kleidet die Bauchhöhle aus und umhüllt die Organe. Mesenterien befestigen den Darm an der Bauchwand. Die abdominalen Faszien verbinden die verschiedenen Bauchmuskelschichten für Bauchspannung.`
+    }
+  },
+  kruppe: {
+    title: `Kruppe & Hinterhand`, icon: "\u{1F434}",
+    layers: {
+      knochen: `Becken (Os pelvis): Ringförmig \u2013 Darmbein (Os ilium) \u2192 ISG, Schambein (Os pubis) \u2192 Symphyse (löst sich bei Geburt), Sitzbein (Os ischii). Tastbare Punkte: Darmbeinhöcker (höchster Punkt Kruppe), Hüfthöcker (seitlich), Sitzbeinhöcker (seitlich Anus). Hüftgelenk: Kugelgelenk, tief unter Muskulatur. Oberschenkel (Os femoris): Kurz, kräftig. Kniegelenk: Kniekehlgelenk (2 Menisken) + Kniescheibengelenk (Schlittengelenk).`,
+      muskeln: `Mm. glutaei: Sichtbare Kruppe, Hüftgelenkstrecker. Gut gerittene Pferde haben sogenannte Hosen (wie Kniebundhose). Kranial: M. quadrizeps femoris + M. tensor fascia latae strecken Hüft-, Knie- und Sprunggelenk. Kaudal: M. biceps femoris, M. semimembranosus, M. semitendinosus. Medial: Adduktoren. Spannsägenkonstruktion: Knie und Sprunggelenk nur gemeinsam beug-/streckbar. Patellarsehne kann einhaken \u2192 Ruhen im Stehen (Fluchttieranpassung).`,
+      organe: `Teile des Dickdarms (Grimmdarm mit Wendungen). Stute: Eierstöcke + Gebärmutter (Zyklus 3\u20134 Wochen, Trächtigkeit 11 Monate). Hengst: Hoden + Nebenhoden. Blase ventral im Becken. Harnröhre Stute sehr kurz. Mastdarm (Rectum). Kreuzbein enthält letzte Rückenmarksabschnitte. Parasympathikus innerviert von hier Harnblase, Mastdarm, Geschlechtsorgane. ISG ist empfindlich gegen Drehbewegungen.`,
+      faszien: `Die Fascia glutaea bedeckt die Kruppenmuskulatur. Die Fascia lata umhüllt den Oberschenkel \u2013 der M. tensor fascia latae spannt diese Faszie und überträgt Kraft über das gesamte Hinterbein. Das straffe ISG (Iliosakralgelenk) verbindet Becken und Kreuzbein \u2013 empfindlich gegen Drehung, häufige Problemquelle.`
+    }
+  },
+  vorderbein: {
+    title: `Vorderbein`, icon: "\u{1F9BF}",
+    layers: {
+      knochen: `Unterarm: Nur Speiche (Os radius); Elle (Os ulna) verkümmert \u2192 bildet Ellbogenhöcker. Karpalgelenk: 3 Gelenkreihen + Erbsbein (Os pisiforme). Röhrbein (Os metacarpale III): Verlängerter Mittelfinger. Griffelbeine als Führungsschienen. Fesselgelenk: Scharniergelenk, 7 Haltebänder, Gleichbeine als Umlenkrollen. Fesselbein, Krongelenk (Sattelgelenk), Kronbein (ragt in Hufkapsel), Hufgelenk, Hufbein (über Lederhaut aufgehängt).`,
+      muskeln: `Alle Muskeln enden oberhalb des Karpalgelenks \u2013 distal nur Sehnen und Bänder! Oberflächliche + tiefe Beugesehne (palmar). Strecksehne (dorsal). Fesselträger (M. interosseus medius): Teilt sich vor Fesselgelenk, umschließt Fesselkopf, verschmilzt mit Strecksehne. Fesselringband, Fesselplatte (vierzipfelig), Sohlenbinde. Sehnenscheiden schützen \u2013 bei Überlastung: Entzündung \u2192 Gallen. Belastungsanpassung Röhrbeine: Beim gerittenen Pferd quer-ovaler Querschnitt.`,
+      organe: `Geringe Durchblutung distal \u2192 Sehnenverletzungen heilen langsamer als Muskelverletzungen. Anastomosen auf Höhe Karpalgelenk: Bei Kälte/Schock/Stress geöffnet \u2192 minimale Beindurchblutung \u2192 kalte Füße. Hufpumpe pumpt venöses Blut zurück. Muskelpumpe unterstützt. Venenklappen verhindern Rückfluss. Angelaufene Beine bei längerem Stehen. Lymphsystem transportiert Abfallstoffe ab.`,
+      faszien: `Fascia antebrachii umhüllt den Unterarm. Sehnenscheiden = schützende Hüllen mit Flüssigkeit. Schleimbeutel = wassergefüllte Polster an Gelenken. Die enge Verbindung von Sehnen, Bändern und Faszien im distalen Bein bildet ein komplexes funktionelles System.`
+    }
+  },
+  hinterbein: {
+    title: `Hinterbein`, icon: "\u{1F9B5}",
+    layers: {
+      knochen: `Unterschenkel: Schienbein (Os tibia), Wadenbein (Os fibula) verkümmert. Sprunggelenk: Mehrere Knochen, Beugung nur am Kruralgelenk. Distale Knochenreihen = straffe Gelenke \u2192 bei Stoßbelastung: Entzündung \u2192 Verknöcherung = Spat. Sprunggelenkshöcker (Os calcaneus): Umlenkpunkt Beugesehnen \u2192 Piephacke/Hasenhacke bei mechanischer Reizung. Distal vom Sprunggelenk: Aufbau wie Vorderbein.`,
+      muskeln: `Kranial: M. tibialis cranialis, M. fibularis tertius, Extensoren \u2192 Beugung Sprunggelenk + Streckung Zehen. Kaudal: M. gastrocnemius, Flexoren, M. popliteus \u2192 Streckung Sprung, Kniebeugung, Zehenbeugung. Spannsägenkonstruktion: Knie + Sprunggelenk nur gemeinsam beug-/streckbar. Patellarsehne kann über medialem Rollkamm einhaken \u2192 Knie fixiert \u2192 Ruhen im Stehen bei geringstem Kraftaufwand.`,
+      organe: `Wie Vorderbein: Geringe Durchblutung distal. Anastomosen regulieren Beindurchblutung. Hufpumpe + Muskelpumpe essentiell für venösen Rückfluss. Angelaufene Beine bei langem Stehen. Lymphbahnen transportieren Abfallstoffe. Ständige ruhige Bewegung nötig für gute Durchblutung und Lymphabfluss.`,
+      faszien: `Fascia cruris umhüllt Unterschenkel. Fascia lata über Oberschenkel. Achillessehne (Tendo calcaneus communis) = stärkste Sehnenstruktur. Die Spannsägenkonstruktion \u2013 eine faszial-tendinöse Koppelung \u2013 ist eine evolutionäre Anpassung des Fluchttieres.`
+    }
+  },
+  huf: {
+    title: `Huf`, icon: "\u{1F528}",
+    layers: {
+      knochen: `Hufbein (Phalanx distalis): Hufförmig, über Lederhaut schwebend in Hornkapsel aufgehängt \u2192 Stoßdämpfung. Strahlbein (Os naviculare): Umlenkrolle für tiefe Beugesehne. Zusammen = Hufrollenapparat. Kronbein beginnt den Übergang in die Hufkapsel. Krongelenk = Sattelgelenk (Kippbewegung für Bodenunebenheiten). Hufgelenk = ebenfalls Sattelgelenk.`,
+      muskeln: `Im Huf selbst keine Muskeln \u2013 nur Sehnen und Bänder! Oberflächliche + tiefe Beugesehne setzen am Huf-/Kronbein an. Strecksehne dorsal am Hufbein. Hufrollenapparat (Strahlbein + Schleimbeutel + tiefe Beugesehne) = kritische Struktur. Sohlenbinde stabilisiert von unten. Hufknorpel an Seiten des Hufbeins ermöglichen Elastizität.`,
+      organe: `Lederhaut = die lebende Haut unter der Hornkapsel, produziert am Kronrand das Hufhorn und versorgt den Huf. Weiße Linie = feinste Lamellen-Verbindung. Hufkissen = Polster + Pumpmechanismus (Hufpumpe = Gegenpart zum Herzen). Hufhorn passt sich an Untergrund an. Beschädigter Kronrand ergibt schwaches Hufhorn und Risse. Futterringe am Huf = Hinweis auf Stoffwechselprobleme.`,
+      faszien: `Die Lamellen der weißen Linie tragen das gesamte Gewicht des Pferdes. Huflederhaut in Zonen: Kronlederhaut (Hufwand), Wandlederhaut (Blättchen), Sohlenlederhaut, Strahllederhaut. Vergleichbar mit einem faszialen Aufhängungs-System, das das Hufbein schwebend in der Hornkapsel hält.`
+    }
+  },
+  schweif: {
+    title: `Schweif`, icon: "\u{3030}\uFE0F",
+    layers: {
+      knochen: `15\u201321 Schwanzwirbel bilden die Schweifrübe. Relativ klein und kompakt, kein Wirbelkanal, keine Fortsätze. Ab dem Kreuzbein verlaufen keine Rückenmarksstrukturen mehr.`,
+      muskeln: `Mehrere kleine Muskeln bewegen den Schweif: Heben, Senken, Seitwärtsbewegen. Schweifbewegung = wichtiger Indikator für Wohlbefinden. Klemmender Schweif kann auf Rücken- oder ISG-Probleme hinweisen.`,
+      organe: `An Unterseite Schweifrübe: Puls tastbar. Harnröhre Stute endet unter Schweifrübe. Parasympathikus innerviert von hinterem Lendenbereich: Harnblase, Mastdarm, Geschlechtsorgane. Nervus vagus (10. Hirnnerv) innerviert alle Eingeweide.`,
+      faszien: `Kaudale Fortsetzung der Rückenfaszie umhüllt Schweifmuskulatur. Schweifrübe über fasziale Strukturen mit Kruppe und Kreuzbein verbunden. Fasziale Spannungen in Kruppe/ISG können Schweifbeweglichkeit beeinträchtigen.`
+    }
+  }
+};
+
+const LAYERS = {
+  knochen: { label: "Knochen", color: "#c4a97d", icon: "\u{1F9B4}", cls: "lk" },
+  muskeln: { label: "Muskeln", color: "#c94c4c", icon: "\u{1F4AA}", cls: "lm" },
+  faszien: { label: "Faszien", color: "#6b5b95", icon: "\u{1F9EC}", cls: "lf" },
+  organe:  { label: "Organe",  color: "#d4a76a", icon: "\u{1FAC0}", cls: "lo" }
+};
+
+const LF = {
+  knochen: { f:"#f0e6d2", s:"#c4a97d" },
+  muskeln: { f:"#e8a0a0", s:"#c94c4c" },
+  faszien: { f:"#b8a8d4", s:"#6b5b95" },
+  organe:  { f:"#e8c88a", s:"#d4a76a" }
+};
+
+const FULL_KB = `Wissensbasis: Anatomie des Pferdes, Dr. Christina Fritz (Cadmos 2011). GRUNDLAGEN: Vorhand=Kopf-Schulter inkl. Vorderbeine. Mittelhand=Ruecken/Brust/Bauch. Hinterhand=Kruppe+Hinterbeine. Richtungen: Kranial(vorn), Kaudal(hinten), Dorsal(oben), Ventral(unten), Medial(Mittellinie), Lateral(seitlich), Proximal(nah), Distal(fern). KNOCHEN: ueber 200 Knochen, lebendiges Gewebe. 50% Mineral, 25% Wasser, 25% Osteozyten. 9-10kg Ca im Skelett, 20% mobilisierbar. Pferd mit 6J ausgewachsen (bis 8J). Epiphysenfugen=Wachstumsscheiben. GELENKE: 15-20min Schritt zum Knorpelaufpumpen. Synovialfluessigkeit=Naehrfluessigkeit. Arthrose durch wenig/viel Bewegung, Uebergewicht, Chips, Selenvergiftung, Alter. WIRBELSAEULE: 7HW, 18BW, 6LW(Araber 5), Kreuzbein(verknoechert 4-5J), 15-21 Schwanzwirbel. Atlas+Axis=Kopfdrehung. SCHAEDEL: 29 Knochen, 1 echtes Gelenk(Kiefer). M.masseter=5t. ZAEHNE: Wechsel 3.-5.LJ. Raspelgebiss unter 2mm. 2-3mm Abnutzung/Jahr. VORDERBEIN: Kein Schluesselbein, Rumpf muskulaer aufgehaengt. Schulterblatt +-2cm Spielraum. Alle Muskeln enden oberhalb Karpalgelenk, distal nur Sehnen/Baender. HINTERBEIN: Motor des Pferdes. Beckenring+ISG. Spannsaegenkonstruktion=Knie+Sprunggelenk gemeinsam. Patella-Fixierung, Ruhen im Stehen. Spat=Verknoecherung Sprunggelenk. HUF: Hufbein schwebend in Hornkapsel. Hufpumpe=Gegenpart Herz. Kronrand produziert Horn. MUSKULATUR: Quergestreifte(willentlich), Herzmuskel(Gap Junctions), Glatte(Organe). M.serratus ventralis=Rumpftragevorrichtung. M.erector spinae=Aufrichter. HERZ-KREISLAUF: ueber 30L Blut. Ruhepuls 36/min. 40% Herzfehler. Milz=Blutspeicher. Anastomosen bei Kaelte fuer kalte Fuesse. LYMPHSYSTEM: Muellabfuhr. Makrophagen. ATMUNG: Nur Nasenatmung. Siebbein filtert. Flimmerepithel. Alveolen=Gasaustausch. Dampfrinne=chronischer Husten. VERDAUUNG: Magen klein, staendige Saeure. Ueber 4h ohne Raufutter fuer Magengeschwuere im Saccus caecus. Duenndarm 20-30m. Blinddarm ueber 30L bakterielle Verdauung. Grimmdarm 10m, Kolikgefahr. Leber=Entgiftung (schwaecher als Hund). Pankreas=Insulin/Glukagon. Pferd kann nicht erbrechen. NIEREN: 25% Blutvolumen. 550L Primaerharn/24h. FORTPFLANZUNG: Stute ab 18Mon, Zyklus 3-4Wo, Traechtigkeit 11Mo. HAUT: Spiegel der Gesundheit. Saeureschutzmantel. Bis 10L Schweiss/h. NERVENSYSTEM: ZNS irreparabel. PNS regenerierbar. Sympathikus=Flucht, Parasympathikus=Ruhe. 360Grad Sicht, Vibrissen nicht scheren.`;
+
+
+// ===== State =====
+let S = {
+  view: "seitlich",
+  layer: "knochen",
+  sel: null,
+  chatOpen: false,
+  msgs: [],
+  loading: false
+};
+
+// ===== SVG Helpers =====
+function ra(id) {
+  const c = LF[S.layer];
+  const sel = S.sel === id;
+  const fill = sel ? LAYERS[S.layer].color : c.f;
+  const stroke = sel ? "#1a3c34" : c.s;
+  const flt = sel ? "filter:drop-shadow(0 0 8px "+LAYERS[S.layer].color+")" : "";
+  return `class="sa-region${sel?" selected":""}" fill="${fill}" stroke="${stroke}" stroke-width="2" data-region="${id}" style="${flt}"`;
+}
+function lb(x,y,t) {
+  return `<text x="${x}" y="${y}" text-anchor="middle" class="sa-region-label">${t}</text>`;
+}
+
+function svgSide() {
+  return `<svg viewBox="0 0 700 500">
+<path d="M95 75 Q80 55 70 50 L65 55 Q72 62 78 78" ${ra("kopf")}/>
+<path d="M55 140 Q45 155 35 185 Q30 200 38 210 Q50 215 60 210 Q65 200 70 185 Q80 160 90 145 Q100 120 105 100 Q108 85 100 75 Q92 68 82 78 Q70 95 62 120 Z" ${ra("kopf")}/>
+<ellipse cx="78" cy="115" rx="5" ry="4" fill="#2c1810" opacity=".7" style="pointer-events:none"/>
+<ellipse cx="50" cy="195" rx="4" ry="5" fill="#3a2a20" opacity=".45" style="pointer-events:none"/>
+<path d="M90 145 Q110 140 140 150 Q170 165 200 190 Q215 200 220 215 L220 250 Q200 240 170 230 Q140 220 115 205 Q100 190 95 170 Z" ${ra("hals")}/>
+<path d="M90 145 Q105 130 125 125 Q145 125 165 135 Q180 145 195 160 Q205 170 212 185" fill="none" stroke="#3a2a20" stroke-width="4" opacity=".15" style="pointer-events:none"/>
+<path d="M220 215 Q240 210 265 215 Q280 220 285 240 Q288 260 285 280 Q280 310 270 330 L225 330 Q215 300 215 270 Q218 245 220 230 Z" ${ra("schulter")}/>
+<path d="M265 215 Q310 205 360 200 Q410 198 450 205 Q460 210 460 220 L460 240 Q440 230 400 225 Q360 222 320 225 Q290 228 270 235 L270 240 Q268 228 265 215 Z" ${ra("ruecken")}/>
+<path d="M270 280 Q275 310 280 330 Q290 360 320 370 Q370 380 420 370 Q450 360 465 340 L465 280 Q440 270 400 265 Q360 262 320 265 Q290 268 270 275 Z" ${ra("bauch")}/>
+<path d="M460 205 Q490 200 520 210 Q545 225 555 250 Q560 275 555 300 Q548 330 530 350 Q515 365 500 370 L465 370 L465 240 Q462 220 460 210 Z" ${ra("kruppe")}/>
+<path d="M555 250 Q570 240 580 250 Q590 270 585 300 Q580 330 570 360 Q565 380 560 400" fill="none" stroke="${S.sel==='schweif'?'#1a3c34':LF[S.layer].s}" stroke-width="6" stroke-linecap="round" class="sa-region${S.sel==='schweif'?' selected':''}" data-region="schweif"/>
+<path d="M240 330 Q235 360 238 390 Q240 410 242 430 L242 448 L268 448 L265 430 Q262 410 260 390 Q258 360 260 330 Z" ${ra("vorderbein")}/>
+<rect x="237" y="448" width="36" height="16" rx="5" ${ra("huf")}/>
+<path d="M490 370 Q488 395 485 420 Q482 440 484 455 L484 473 L510 473 L508 455 Q510 440 512 420 Q515 395 518 370 Z" ${ra("hinterbein")}/>
+<rect x="479" y="473" width="36" height="16" rx="5" ${ra("huf")}/>
+${lb(70,145,"Kopf")} ${lb(155,195,"Hals")} ${lb(250,270,"Schulter")}
+${lb(365,215,"R\u00fccken")} ${lb(370,340,"Bauch")} ${lb(510,270,"Kruppe")}
+${lb(250,400,"Vorderbein")} ${lb(500,415,"Hinterbein")} ${lb(575,340,"Schweif")}
+</svg>`;
+}
+
+function svgFront() {
+  return `<svg viewBox="0 0 400 600">
+<path d="M165 80 L155 30 L175 60 Z" ${ra("kopf")}/>
+<path d="M235 80 L245 30 L225 60 Z" ${ra("kopf")}/>
+<path d="M165 80 Q160 90 160 120 Q155 160 165 200 Q175 230 200 245 Q225 230 235 200 Q245 160 240 120 Q240 90 235 80 Q220 70 200 68 Q180 70 165 80 Z" ${ra("kopf")}/>
+<ellipse cx="175" cy="130" rx="10" ry="6" fill="#2c1810" opacity=".7" style="pointer-events:none"/>
+<ellipse cx="225" cy="130" rx="10" ry="6" fill="#2c1810" opacity=".7" style="pointer-events:none"/>
+<path d="M162 200 Q140 240 130 290 Q125 310 128 330 L272 330 Q275 310 270 290 Q260 240 238 200" ${ra("hals")}/>
+<path d="M100 330 Q90 350 85 380 Q80 420 90 460 L155 460 L155 330 Z" ${ra("schulter")}/>
+<path d="M300 330 Q310 350 315 380 Q320 420 310 460 L245 460 L245 330 Z" ${ra("schulter")}/>
+<rect x="155" y="330" width="90" height="130" rx="8" ${ra("bauch")}/>
+<path d="M100 460 Q95 500 98 540 L98 575 L128 575 L128 540 Q132 500 130 460 Z" ${ra("vorderbein")}/>
+<path d="M300 460 Q305 500 302 540 L302 575 L272 575 L272 540 Q268 500 270 460 Z" ${ra("vorderbein")}/>
+<rect x="92" y="575" width="42" height="18" rx="6" ${ra("huf")}/>
+<rect x="266" y="575" width="42" height="18" rx="6" ${ra("huf")}/>
+${lb(200,155,"Kopf")} ${lb(200,280,"Hals")} ${lb(200,405,"Brust")}
+</svg>`;
+}
+
+function svgTop() {
+  return `<svg viewBox="0 0 400 600">
+<path d="M185 30 Q175 40 172 60 Q170 80 175 100 Q180 115 200 120 Q220 115 225 100 Q230 80 228 60 Q225 40 215 30 Q200 22 185 30 Z" ${ra("kopf")}/>
+<ellipse cx="178" cy="40" rx="8" ry="14" ${ra("kopf")}/>
+<ellipse cx="222" cy="40" rx="8" ry="14" ${ra("kopf")}/>
+<path d="M175 120 Q160 140 152 170 Q148 200 150 230 L250 230 Q252 200 248 170 Q240 140 225 120 Z" ${ra("hals")}/>
+<path d="M120 230 Q100 250 90 280 Q85 300 90 320 L310 320 Q315 300 310 280 Q300 250 280 230 Z" ${ra("schulter")}/>
+<rect x="100" y="320" width="200" height="80" rx="15" ${ra("ruecken")}/>
+<path d="M105 400 Q95 420 92 440 Q90 460 95 475 L305 475 Q310 460 308 440 Q305 420 295 400 Z" ${ra("bauch")}/>
+<path d="M110 475 Q100 500 105 530 Q115 555 155 560 L245 560 Q285 555 295 530 Q300 500 290 475 Z" ${ra("kruppe")}/>
+<path d="M190 560 Q195 578 200 594 Q205 578 210 560" fill="none" stroke="${LF[S.layer].s}" stroke-width="4" class="sa-region" data-region="schweif"/>
+<line x1="200" y1="100" x2="200" y2="560" stroke="#1a3c34" stroke-width="1.5" stroke-dasharray="4,4" opacity=".2" style="pointer-events:none"/>
+${lb(200,80,"Kopf")} ${lb(200,185,"Hals")} ${lb(200,280,"Schulter")}
+${lb(200,365,"R\u00fccken")} ${lb(200,445,"Bauch")} ${lb(200,525,"Kruppe")}
+</svg>`;
+}
+
+// ===== Render =====
+function render() {
+  const r = S.sel;
+  const rd = r ? ANATOMY_KB[r] : null;
+  const rt = rd ? (rd.layers[S.layer] || "") : "";
+  const mob = window.innerWidth < 768;
+
+  const svgHtml = S.view === "seitlich" ? svgSide() : S.view === "frontal" ? svgFront() : svgTop();
+
+  let msgsHtml = "";
+  if (S.msgs.length === 0) {
+    msgsHtml = `<div class="sa-chat-welcome">
+      <div class="sa-chat-welcome-icon">\u{1F434}</div>
+      <p class="sa-chat-welcome-title">Willkommen beim Anatomie-Assistenten</p>
+      <p class="sa-chat-welcome-sub">Stelle mir Fragen zur Pferdeanatomie \u2013 von Knochen \u00fcber Muskeln bis hin zu Organsystemen.</p>
+    </div>`;
+  } else {
+    msgsHtml = S.msgs.map(function(m) {
+      return '<div class="sa-msg ' + m.role + '">' + esc(m.content) + '</div>';
+    }).join("");
+  }
+  if (S.loading) {
+    msgsHtml += '<div class="sa-msg assistant"><div class="sa-typing"><span></span><span></span><span></span></div></div>';
+  }
+
+  let quickHtml = "";
+  if (S.msgs.length === 0 && !S.loading) {
+    quickHtml = `<div class="sa-quick-questions">
+      <button class="sa-qq" data-qq="Was sind die h\u00e4ufigsten Ursachen f\u00fcr Arthrose beim Pferd?">Arthrose-Ursachen</button>
+      <button class="sa-qq" data-qq="Erkl\u00e4re die Spanns\u00e4gekonstruktion des Hinterbeins.">Spanns\u00e4ge</button>
+      <button class="sa-qq" data-qq="Warum sind Magengeschw\u00fcre so h\u00e4ufig?">Magengeschw\u00fcre</button>
+      <button class="sa-qq" data-qq="Was verr\u00e4t der M. serratus ventralis \u00fcber den Trainingsstand?">M. serratus</button>
+    </div>`;
+  }
+
+  let layerBtns = "";
+  for (const k in LAYERS) {
+    const v = LAYERS[k];
+    const act = S.layer === k ? " active " + v.cls : "";
+    layerBtns += '<button class="sa-layer-pill' + act + '" data-layer="' + k + '">' + v.icon + ' <span class="lbl">' + v.label + '</span></button>';
+  }
+
+  document.getElementById("app").innerHTML =
+    '<div class="sa-header"><div class="sa-header-inner">' +
+      '<div class="sa-logo-area"><div class="sa-logo-mark">SA</div><div><div class="sa-logo-title">Anatomie des Pferdes</div><div class="sa-logo-sub">Sanoanimal Wissensplattform</div></div></div>' +
+      '<div class="sa-header-badge">Dr. Christina Fritz</div>' +
+    '</div></div>' +
+
+    '<div class="sa-controls">' +
+      '<div class="sa-ctrl-group"><span class="sa-ctrl-label">Ansicht</span><div class="sa-pills">' +
+        '<button class="sa-pill' + (S.view==="seitlich"?" active":"") + '" data-view="seitlich">\u2194 Seitlich</button>' +
+        '<button class="sa-pill' + (S.view==="frontal"?" active":"") + '" data-view="frontal">\u2191 Frontal</button>' +
+        '<button class="sa-pill' + (S.view==="dorsal"?" active":"") + '" data-view="dorsal">\u2193 Dorsal</button>' +
+      '</div></div>' +
+      '<div class="sa-ctrl-group"><span class="sa-ctrl-label">Ebene</span><div class="sa-pills">' + layerBtns + '</div></div>' +
+    '</div>' +
+
+    '<div class="sa-main">' +
+      '<div class="sa-model-area' + (r && !mob ? " with-info" : "") + '">' +
+        '<div class="sa-model-card"><div class="sa-model-viewport">' + svgHtml + '</div>' +
+        '<div class="sa-model-hint">' + (r && rd ? rd.icon + " " + rd.title + " \u2013 " + LAYERS[S.layer].label : "Tippe auf eine K\u00f6rperregion") + '</div></div>' +
+      '</div>' +
+
+      '<div class="sa-info' + (r ? " visible" : "") + '">' +
+        (mob ? '<div class="sa-info-handle"><div class="sa-info-handle-bar"></div></div>' : '') +
+        '<div class="sa-info-head"><div class="sa-info-title-wrap"><span class="sa-info-icon">' + (rd ? rd.icon : "") + '</span><span class="sa-info-title">' + (rd ? rd.title : "") + '</span></div>' +
+        '<div class="sa-layer-badge">' + LAYERS[S.layer].icon + " " + LAYERS[S.layer].label + '</div></div>' +
+        '<div class="sa-info-body"><p class="sa-info-text">' + rt + '</p></div>' +
+        '<div class="sa-info-actions"><button class="sa-btn-chat" id="btnCD">\u{1FA7A} Im Chat vertiefen</button><button class="sa-btn-close-info" id="btnCI">\u2715 Schlie\u00dfen</button></div>' +
+      '</div>' +
+    '</div>' +
+
+    '<button class="sa-fab" id="btnFab" style="' + (S.chatOpen ? "display:none" : "") + '">\u{1F4AC}</button>' +
+
+    '<div class="sa-chat' + (S.chatOpen ? " visible" : "") + '">' +
+      '<div class="sa-chat-head"><div class="sa-chat-head-left"><span style="font-size:16px">\u{1FA7A}</span><span class="sa-chat-head-title">Anatomie-Assistent</span></div><button class="sa-chat-close" id="btnCC">\u2715</button></div>' +
+      '<div class="sa-chat-msgs" id="chatMsgs">' + msgsHtml + '</div>' +
+      quickHtml +
+      '<div class="sa-chat-input-area"><input class="sa-chat-input" id="chatIn" placeholder="Frage zur Pferdeanatomie..." autocomplete="off"/><button class="sa-chat-send" id="btnCS"' + (S.loading ? " disabled" : "") + '>\u2192</button></div>' +
+    '</div>';
+
+  bind();
+  var cm = document.getElementById("chatMsgs");
+  if (cm) setTimeout(function(){ cm.scrollTop = cm.scrollHeight; }, 50);
+}
+
+function esc(t) {
+  var d = document.createElement("div");
+  d.textContent = t;
+  return d.innerHTML.replace(/\n/g, "<br>");
+}
+
+// ===== Event Binding =====
+function bind() {
+  document.querySelectorAll("[data-view]").forEach(function(b){ b.onclick = function(){ S.view = b.dataset.view; render(); }; });
+  document.querySelectorAll("[data-layer]").forEach(function(b){ b.onclick = function(){ S.layer = b.dataset.layer; render(); }; });
+  document.querySelectorAll("[data-region]").forEach(function(b){ b.onclick = function(){ S.sel = b.dataset.region; render(); }; });
+  var ci = document.getElementById("btnCI");
+  if (ci) ci.onclick = function(){ S.sel = null; render(); };
+  var cd = document.getElementById("btnCD");
+  if (cd) cd.onclick = function(){
+    if (S.sel && ANATOMY_KB[S.sel]) {
+      var rd = ANATOMY_KB[S.sel];
+      S.chatOpen = true;
+      render();
+      setTimeout(function(){
+        sendMsg("Erkl\u00e4re mir die " + rd.title + " des Pferdes \u2013 Ebene: " + LAYERS[S.layer].label + ". Was ist besonders wichtig f\u00fcr Therapeuten?");
+      }, 100);
+    }
+  };
+  var fab = document.getElementById("btnFab");
+  if (fab) fab.onclick = function(){ S.chatOpen = true; render(); };
+  var cc = document.getElementById("btnCC");
+  if (cc) cc.onclick = function(){ S.chatOpen = false; render(); };
+  var cs = document.getElementById("btnCS");
+  var inp = document.getElementById("chatIn");
+  if (cs && inp) {
+    cs.onclick = function(){ var v = inp.value.trim(); if (v) sendMsg(v); };
+    inp.onkeydown = function(e){ if (e.key === "Enter") { var v = inp.value.trim(); if (v) sendMsg(v); } };
+  }
+  document.querySelectorAll("[data-qq]").forEach(function(b){ b.onclick = function(){ sendMsg(b.dataset.qq); }; });
+}
+
+// ===== Chat API =====
+async function sendMsg(text) {
+  if (S.loading || !text) return;
+  S.msgs.push({ role: "user", content: text });
+  S.loading = true;
+  render();
+
+  try {
+    var history = S.msgs.slice(-8).map(function(m){ return { role: m.role, content: m.content }; });
+    var res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 1000,
+        system: "Du bist der Sanoanimal Anatomie-Assistent, ein freundlicher Tutor fuer Pferdeanatomie, basierend auf dem Buch Die Anatomie des Pferdes von Dr. Christina Fritz (Cadmos Verlag, 2011). Du antwortest ausschliesslich auf Deutsch.\n\nWISSENSBASIS:\n" + FULL_KB + "\n\nREGELN:\n- Antworte kurz, praezise und praxisnah (max 3-4 Absaetze)\n- Nutze nur Wissen aus der Wissensbasis\n- Wenn etwas nicht in der Wissensbasis steht, sage das ehrlich\n- Verwende Fachbegriffe mit Erklaerung in Klammern\n- Verweise auf relevante Zusammenhaenge (z.B. Fuetterung und Anatomie)\n- Beende mit einem kurzen Praxistipp oder einer Vertiefungsfrage wenn passend\n- Spreche die Therapeuten respektvoll und kollegial an",
+        messages: history
+      })
+    });
+    var data = await res.json();
+    var reply = "";
+    if (data.content) {
+      for (var i = 0; i < data.content.length; i++) {
+        if (data.content[i].text) reply += data.content[i].text;
+      }
+    }
+    if (!reply) reply = "Entschuldigung, ich konnte keine Antwort generieren.";
+    S.msgs.push({ role: "assistant", content: reply });
+  } catch (err) {
+    S.msgs.push({ role: "assistant", content: "Verbindungsfehler \u2013 bitte versuche es erneut. (" + err.message + ")" });
+  }
+  S.loading = false;
+  render();
+}
+
+// ===== Init =====
+window.addEventListener("resize", render);
+render();
+</script>
+</body>
+</html>

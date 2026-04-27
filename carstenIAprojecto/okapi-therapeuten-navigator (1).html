@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <title>OKAPI Produkt-Navigator für Therapeuten</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* Magento CSS override reset */
+    .navigator-module, .navigator-module * { box-sizing: border-box !important; }
+    .navigator-module button { -webkit-appearance: none !important; -moz-appearance: none !important; appearance: none !important; }
+    .navigator-module input[type="text"],
+    .navigator-module input[type="number"] { -webkit-appearance: none !important; -moz-appearance: none !important; appearance: none !important; }
+    .navigator-module ul, .navigator-module ol { list-style: none !important; margin: 0 !important; padding: 0 !important; }
+    .navigator-module div, .navigator-module span, .navigator-module p, .navigator-module h1, .navigator-module h2, .navigator-module h3, .navigator-module label, .navigator-module input, .navigator-module button {
+      float: none !important;
+      text-indent: 0 !important;
+    }
+    :root {
+      --sano-gold: #E8C96A;
+      --sano-gold-light: #f0d88a;
+      --sano-gold-pale: rgba(232,201,106,0.12);
+      --green-highlight: #3D6B5A;
+      --green-gradient: linear-gradient(160deg, #152618 0%, #1e3324 20%, #2a4432 45%, #3a5e44 70%, #4a6e54 100%);
+      --gold-border: linear-gradient(90deg, #E8C96A, #f0d88a, #E8C96A) 1;
+      --okapi-beige-light: #f5f0e4;
+      --okapi-beige: #e2d4b0;
+      --okapi-white: #ffffff;
+      --okapi-text: #1a1a2e;
+      --okapi-text-mid: #374365;
+      --okapi-text-light: #6b7280;
+      --radius: 6px;
+      --radius-lg: 12px;
+      --shadow-md: 0 2px 12px rgba(0,0,0,0.07);
+      --shadow-lg: 0 8px 30px rgba(0,0,0,0.12);
+      --text-box-heading: 16px;
+      --text-body: 14px;
+      --text-small: 12px;
+      --cat-1: #1b6e3a;
+      --cat-1-bg: #b8e6cb;
+      --cat-2: #0e5a80;
+      --cat-2-bg: #a8d4ec;
+      --cat-3: #7a6520;
+      --cat-3-bg: #e6d9a6;
+      --cat-4: #555b66;
+      --cat-4-bg: #d2d6dc;
+      --cat-x: #B8402E;
+      --cat-x-bg: #f5c4bc;
+      --tag-gelb: #8a6600;
+      --tag-gelb-bg: #f5e4a8;
+      --tag-lila: #5a3d7a;
+      --tag-lila-bg: #d8c8eb;
+      --tag-orange: #b04a10;
+      --tag-orange-bg: #f5cca8;
+    }
+    body { font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif; background: var(--okapi-beige-light); color: var(--okapi-text); font-size: var(--text-body); line-height: 1.55; -webkit-font-smoothing: antialiased; }
+    .navigator-module { max-width: 1160px; margin: 0 auto; padding: 0 24px; }
+
+    /* HEADER */
+    .nav-header { background: var(--green-gradient); border-radius: var(--radius-lg); border-top: 3px solid; border-image: var(--gold-border); padding: 36px 40px 32px; margin-bottom: 28px; position: relative; overflow: hidden; }
+    .nav-header::after { content: ''; position: absolute; top: -60px; right: -60px; width: 200px; height: 200px; border-radius: 50%; background: rgba(232,201,106,0.06); pointer-events: none; }
+    .nav-header-label { display: inline-block; background: rgba(255,255,255,0.12); color: var(--sano-gold); font-size: var(--text-small); font-weight: 600; text-transform: uppercase; letter-spacing: 1.2px; padding: 5px 14px; border-radius: 20px; margin-bottom: 12px; }
+    .nav-header h1 { font-family: 'Playfair Display', Georgia, serif; font-size: clamp(22px, 2.8vw, 32px); font-weight: 700; color: #fff; line-height: 1.25; margin-bottom: 10px; }
+    .nav-header h1 em { color: var(--sano-gold); font-style: italic; }
+    .nav-header p { color: rgba(255,255,255,0.8); font-size: var(--text-body); max-width: 640px; line-height: 1.6; }
+
+    /* SEARCH */
+    .navigator-module .search-area { background: var(--okapi-white) !important; border-radius: var(--radius-lg) !important; border: 1px solid var(--okapi-beige) !important; box-shadow: var(--shadow-md) !important; padding: 24px !important; margin-bottom: 20px !important; }
+    .navigator-module .search-area-label { font-size: var(--text-small) !important; font-weight: 600 !important; text-transform: uppercase !important; letter-spacing: 0.8px !important; color: var(--green-highlight) !important; margin-bottom: 10px !important; text-align: left !important; }
+    .navigator-module .search-input-wrap { position: relative !important; text-align: left !important; }
+    .navigator-module .search-input-wrap svg { position: absolute !important; left: 14px !important; right: auto !important; top: 50% !important; transform: translateY(-50%) !important; width: 18px !important; height: 18px !important; color: var(--okapi-text-light) !important; pointer-events: none !important; z-index: 2 !important; margin: 0 !important; padding: 0 !important; }
+    .navigator-module .search-input { width: 100% !important; padding: 12px 16px 12px 42px !important; border: 2px solid var(--okapi-beige) !important; border-radius: var(--radius) !important; font-family: inherit !important; font-size: var(--text-body) !important; color: var(--okapi-text) !important; background: var(--okapi-beige-light) !important; outline: none !important; transition: border-color 0.2s, box-shadow 0.2s !important; box-sizing: border-box !important; text-align: left !important; margin: 0 !important; height: auto !important; line-height: normal !important; }
+    .navigator-module .search-input:focus { border-color: var(--green-highlight) !important; box-shadow: 0 0 0 3px rgba(61,107,90,0.12) !important; }
+    .navigator-module .search-input::placeholder { color: var(--okapi-text-light) !important; }
+
+    /* DROPDOWN */
+    .navigator-module .dropdown { position: absolute !important; top: calc(100% + 4px) !important; left: 0 !important; right: 0 !important; background: var(--okapi-white) !important; border: 1px solid var(--okapi-beige) !important; border-radius: var(--radius) !important; box-shadow: var(--shadow-lg) !important; max-height: 260px !important; overflow-y: auto !important; z-index: 100 !important; display: none; text-align: left !important; margin: 0 !important; padding: 0 !important; }
+    .navigator-module .dropdown.open { display: block !important; }
+    .navigator-module .dropdown-item { padding: 10px 16px !important; cursor: pointer !important; font-size: var(--text-body) !important; color: var(--okapi-text) !important; transition: background 0.15s !important; border-bottom: 1px solid rgba(226,212,176,0.4) !important; text-align: left !important; display: block !important; margin: 0 !important; line-height: 1.5 !important; background: var(--okapi-white) !important; }
+    .navigator-module .dropdown-item:last-child { border-bottom: none !important; }
+    .navigator-module .dropdown-item:hover, .navigator-module .dropdown-item.active { background: var(--green-highlight) !important; color: #fff !important; }
+    .navigator-module .dropdown-item mark { background: none !important; color: inherit !important; font-weight: 700 !important; }
+    .navigator-module .dropdown-empty { padding: 14px 16px !important; color: var(--okapi-text-light) !important; font-size: var(--text-body) !important; font-style: italic !important; text-align: left !important; }
+
+    /* PILLS */
+    .selected-diseases { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+    .disease-pill { display: inline-flex; align-items: center; gap: 6px; background: var(--green-gradient); color: #fff; font-size: var(--text-small); font-weight: 600; padding: 7px 12px 7px 14px; border-radius: 20px; animation: pillIn 0.25s ease; white-space: nowrap; }
+    @keyframes pillIn { from { opacity: 0; transform: scale(0.85); } to { opacity: 1; transform: scale(1); } }
+    .disease-pill .pill-num { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 50%; background: var(--sano-gold); color: #1e3324; font-size: 10px; font-weight: 700; flex-shrink: 0; }
+    .disease-pill .pill-remove { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; background: rgba(255,255,255,0.18); border: none; cursor: pointer; color: rgba(255,255,255,0.8); font-size: 14px; line-height: 1; transition: background 0.15s; flex-shrink: 0; padding: 0; }
+    .disease-pill .pill-remove:hover { background: rgba(255,255,255,0.35); color: #fff; }
+    .max-hint { font-size: var(--text-small); color: var(--okapi-text-light); margin-top: 8px; }
+
+    /* SEARCH GRID (two-column) */
+    .navigator-module .search-grid { display: grid !important; grid-template-columns: 1fr 200px !important; gap: 24px !important; align-items: start !important; }
+    .navigator-module .weight-field-stack { display: flex !important; flex-direction: column !important; gap: 8px !important; margin-top: 4px !important; }
+    .navigator-module .weight-field { display: flex !important; align-items: center !important; gap: 4px !important; }
+    .navigator-module .weight-input { width: 90px !important; padding: 10px 10px !important; border: 2px solid var(--okapi-beige) !important; border-radius: var(--radius) !important; font-family: 'Inter', system-ui, sans-serif !important; font-size: 18px !important; font-weight: 700 !important; color: var(--green-highlight) !important; text-align: center !important; background: var(--okapi-beige-light) !important; outline: none !important; transition: border-color 0.2s !important; box-sizing: border-box !important; height: auto !important; line-height: normal !important; margin: 0 !important; box-shadow: none !important; }
+    .navigator-module .weight-input:focus { border-color: var(--green-highlight) !important; box-shadow: 0 0 0 3px rgba(61,107,90,0.12) !important; }
+    .navigator-module .weight-unit { font-size: 16px !important; font-weight: 700 !important; color: var(--okapi-text-mid) !important; }
+    .navigator-module .weight-hint { font-size: var(--text-small) !important; color: var(--okapi-text-light) !important; line-height: 1.45 !important; text-align: left !important; display: block !important; }
+    .navigator-module .search-col-right { border-left: 2px solid var(--okapi-beige) !important; padding-left: 24px !important; text-align: left !important; }
+    .navigator-module .search-col-right .search-area-label { text-align: left !important; }
+    .product-dose { margin-top: 5px; font-size: var(--text-small); font-weight: 600; color: var(--okapi-text); display: inline-block; }
+
+    /* CONTROLS */
+    .controls-area { display: none; margin-bottom: 20px; }
+    .controls-area.visible { display: block; }
+    .legend-bar { display: flex; flex-wrap: wrap; gap: 12px; padding: 12px 16px; background: var(--okapi-white); border: 1px solid var(--okapi-beige); border-radius: var(--radius); margin-bottom: 12px; }
+    .legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--okapi-text-mid); }
+    .legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .legend-divider { width: 1px; height: 16px; background: var(--okapi-beige); flex-shrink: 0; margin-left: auto; }
+    .legend-badge { font-size: 9px; font-weight: 700; padding: 1px 5px; border-radius: 3px; text-transform: uppercase; letter-spacing: 0.3px; }
+
+    .controls-row { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 12px; }
+    .control-box { display: flex; align-items: center; gap: 10px; padding: 10px 16px; background: var(--okapi-white); border: 1px solid var(--okapi-beige); border-radius: var(--radius); flex: 1; min-width: 200px; }
+    .toggle-switch { position: relative; width: 40px; height: 22px; flex-shrink: 0; }
+    .toggle-switch input { opacity: 0; width: 0; height: 0; position: absolute; }
+    .toggle-slider { position: absolute; inset: 0; background: var(--okapi-beige); border-radius: 11px; cursor: pointer; transition: background 0.25s; }
+    .toggle-slider::after { content: ''; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%; background: #fff; transition: transform 0.25s; box-shadow: 0 1px 3px rgba(0,0,0,0.15); }
+    .toggle-switch input:checked + .toggle-slider { background: var(--green-highlight); }
+    .toggle-switch input:checked + .toggle-slider::after { transform: translateX(18px); }
+    .toggle-label { font-size: var(--text-body); color: var(--okapi-text-mid); }
+
+    /* LAYOUT: filter + disclaimer side by side */
+    .filter-disclaimer-row { display: flex !important; gap: 12px !important; margin-bottom: 70px !important; }
+    .filter-disclaimer-row .horse-filter-box { flex: 1 !important; }
+    .filter-disclaimer-row .disclaimer { flex: 1 !important; margin-bottom: 0 !important; align-self: stretch !important; display: flex !important; align-items: center !important; }
+    .horse-filter-box { padding: 12px 16px; background: var(--okapi-white); border: 1px solid var(--okapi-beige); border-radius: var(--radius); }
+    .horse-filter-label { font-size: var(--text-small); font-weight: 600; text-transform: uppercase; letter-spacing: 0.6px; color: var(--green-highlight); margin-bottom: 8px; }
+    .horse-filter-options { display: flex; flex-wrap: wrap; gap: 16px; }
+    .horse-cb-label { display: flex; align-items: center; gap: 7px; cursor: pointer; font-size: var(--text-body); color: var(--okapi-text-mid); }
+    .horse-cb-label input[type="checkbox"], .horse-cb-label input[type="radio"] { width: 18px; height: 18px; accent-color: var(--green-highlight); cursor: pointer; flex-shrink: 0; }
+
+    /* DISCLAIMER */
+    .disclaimer { padding: 12px 16px; background: var(--okapi-white); border: 1px solid var(--cat-x-bg); border-radius: var(--radius); margin-bottom: 70px; }
+    .disclaimer p { font-size: var(--text-small); color: var(--cat-x); line-height: 1.55; font-weight: 500; }
+    .disclaimer strong { color: var(--cat-x); font-weight: 700; }
+
+    /* RESULTS */
+    .results-area { margin-bottom: 40px; }
+    .results-empty { background: var(--okapi-white); border: 2px dashed var(--okapi-beige); border-radius: var(--radius-lg); padding: 48px 24px; text-align: center; }
+    .results-empty-icon { font-size: 40px; margin-bottom: 12px; opacity: 0.4; }
+    .results-empty h3 { font-family: 'Playfair Display', Georgia, serif; font-size: 18px; font-weight: 700; color: var(--okapi-text); margin-bottom: 6px; }
+    .results-empty p { color: var(--okapi-text-light); font-size: var(--text-body); }
+
+    .results-toolbar { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
+    .results-toolbar h2 { font-family: 'Playfair Display', Georgia, serif; font-size: clamp(18px, 2vw, 24px); font-weight: 700; color: var(--okapi-text); max-width: 50%; line-height: 1.7; }
+    .results-toolbar h2 em { color: var(--green-highlight); font-style: italic; }
+    .navigator-module .toolbar-col { display: flex !important; flex-direction: column !important; gap: 8px !important; align-items: stretch !important; }
+    .navigator-module .toolbar-actions { display: flex !important; gap: 8px !important; flex-wrap: wrap !important; }
+    .navigator-module .toolbar-actions .toolbar-btn { flex: 1 !important; justify-content: center !important; }
+    .desc-toggle-row { display: flex !important; align-items: center !important; gap: 10px !important; padding: 6px 14px !important; background: var(--okapi-beige-light) !important; border: 1px solid var(--okapi-beige) !important; border-radius: var(--radius) !important; flex-wrap: wrap !important; }
+    .toggle-divider { width: 1px !important; height: 18px !important; background: var(--okapi-beige) !important; flex-shrink: 0 !important; margin: 0 4px !important; }
+    .product-desc-text { margin-bottom: 6px; }
+    .product-ingr-text { font-size: 11px !important; color: var(--okapi-text-light) !important; line-height: 1.45 !important; padding-top: 6px !important; border-top: 1px dashed var(--okapi-beige) !important; }
+    .navigator-module .toolbar-btn { display: inline-flex !important; align-items: center !important; gap: 5px !important; background: var(--sano-gold) !important; color: #1e3324 !important; font-family: 'Inter', system-ui, sans-serif !important; font-size: var(--text-small) !important; font-weight: 700 !important; padding: 8px 16px !important; border-radius: var(--radius) !important; border: 2px solid var(--sano-gold) !important; cursor: pointer !important; transition: all 0.2s !important; text-transform: none !important; letter-spacing: normal !important; line-height: 1.4 !important; text-align: center !important; box-shadow: none !important; }
+    .navigator-module .toolbar-btn:hover { background: var(--sano-gold-light) !important; border-color: var(--sano-gold-light) !important; box-shadow: 0 4px 16px rgba(232,201,106,0.35) !important; transform: translateY(-1px) !important; color: #1e3324 !important; }
+    .navigator-module .toolbar-btn:disabled { opacity: 0.4 !important; cursor: not-allowed !important; transform: none !important; box-shadow: none !important; }
+    .navigator-module .toolbar-btn svg { width: 14px !important; height: 14px !important; }
+    .navigator-module .toolbar-btn.secondary { background: transparent !important; color: var(--green-highlight) !important; border-color: var(--green-highlight) !important; }
+    .navigator-module .toolbar-btn.secondary:hover { background: var(--green-highlight) !important; color: #fff !important; box-shadow: 0 4px 16px rgba(61,107,90,0.25) !important; }
+    .copy-hint { font-size: var(--text-small); color: var(--okapi-text-light); font-style: italic; line-height: 1.45; }
+
+    /* Category groups */
+    .category-group { margin-bottom: 20px; animation: fadeUp 0.35s ease both; }
+    .category-group:nth-child(2) { animation-delay: 0.05s; }
+    .category-group:nth-child(3) { animation-delay: 0.10s; }
+    .category-group:nth-child(4) { animation-delay: 0.15s; }
+    .category-group:nth-child(5) { animation-delay: 0.20s; }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+    .category-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; padding: 0 4px; }
+    .category-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .category-title { font-family: 'Inter', system-ui, sans-serif; font-size: 15px; font-weight: 700; }
+    .category-count { font-size: var(--text-small); color: var(--okapi-text-light); margin-left: auto; }
+    .category-toggle { display: inline-flex !important; align-items: center !important; justify-content: center !important; width: 28px !important; height: 28px !important; border-radius: 50% !important; background: var(--green-highlight) !important; border: 1px solid var(--green-highlight) !important; cursor: pointer !important; font-size: 14px !important; color: #fff !important; transition: all 0.2s !important; flex-shrink: 0 !important; margin-left: 8px !important; padding: 0 !important; line-height: 1 !important; }
+    .category-toggle:hover { background: #2a4432 !important; border-color: #2a4432 !important; color: #fff !important; }
+    .category-toggle .chevron { display: inline-block !important; transition: transform 0.25s !important; }
+    .category-group.collapsed .category-toggle .chevron { transform: rotate(-90deg) !important; }
+    .category-group.collapsed .product-list { display: none !important; }
+    .product-list { display: flex; flex-direction: column; gap: 6px; }
+
+    /* Product card with checkbox + description */
+    .product-card { background: var(--okapi-white); border: 1px solid var(--okapi-beige); border-radius: var(--radius); padding: 14px 18px; display: flex; align-items: flex-start; gap: 12px; transition: box-shadow 0.2s, border-color 0.2s; }
+    .product-card:hover { box-shadow: var(--shadow-md); border-color: rgba(61,107,90,0.3); }
+    .product-card.selected { border-color: var(--green-highlight); background: rgba(61,107,90,0.04); }
+    .product-cb { width: 18px; height: 18px; accent-color: var(--green-highlight); cursor: pointer; flex-shrink: 0; margin-top: 2px; }
+    .product-icon { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0; }
+    .product-main { flex: 1; min-width: 0; display: flex; gap: 14px; }
+    .product-info { flex: 1; min-width: 0; }
+    .product-name { font-size: var(--text-box-heading); font-weight: 600; color: var(--okapi-text); line-height: 1.3; }
+    .product-type-badge { display: inline-block; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; padding: 2px 7px; border-radius: 4px; margin-left: 6px; vertical-align: middle; position: relative; top: -1px; }
+    .product-type-F { background: #55a630; color: #fff; }
+    .product-type-P { background: #0e5a80; color: #fff; }
+    .product-type-M { background: #9d4edd; color: #fff; }
+    .product-diseases { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+    .product-disease-tag { font-size: 11px; padding: 2px 8px; border-radius: 10px; font-weight: 500; }
+    .product-special-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+    .special-tag { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.4px; }
+    .special-tag.gelb { background: var(--tag-gelb-bg); color: var(--tag-gelb); }
+    .special-tag.lila { background: var(--tag-lila-bg); color: var(--tag-lila); }
+    .special-tag.orange { background: var(--tag-orange-bg); color: var(--tag-orange); }
+
+    /* Product description on the right */
+    .product-desc { flex: 0 0 390px; font-size: var(--text-small); color: var(--okapi-text-mid); line-height: 1.5; padding-left: 14px; border-left: 2px solid var(--okapi-beige); align-self: center; }
+
+    /* Category colors */
+    .cat-1 .category-dot { background: var(--cat-1); } .cat-1 .category-title { color: var(--cat-1); } .cat-1 .product-icon { background: var(--cat-1-bg); color: var(--cat-1); } .cat-1 .product-disease-tag { background: var(--cat-1-bg); color: var(--cat-1); }
+    .cat-2 .category-dot { background: var(--cat-2); } .cat-2 .category-title { color: var(--cat-2); } .cat-2 .product-icon { background: var(--cat-2-bg); color: var(--cat-2); } .cat-2 .product-disease-tag { background: var(--cat-2-bg); color: var(--cat-2); }
+    .cat-3 .category-dot { background: var(--cat-3); } .cat-3 .category-title { color: var(--cat-3); } .cat-3 .product-icon { background: var(--cat-3-bg); color: var(--cat-3); } .cat-3 .product-disease-tag { background: var(--cat-3-bg); color: var(--cat-3); }
+    .cat-4 .category-dot { background: var(--cat-4); } .cat-4 .category-title { color: var(--cat-4); } .cat-4 .product-icon { background: var(--cat-4-bg); color: var(--cat-4); } .cat-4 .product-disease-tag { background: var(--cat-4-bg); color: var(--cat-4); }
+    .cat-x .category-dot { background: var(--cat-x); } .cat-x .category-title { color: var(--cat-x); } .cat-x .product-icon { background: var(--cat-x-bg); color: var(--cat-x); } .cat-x .product-disease-tag { background: var(--cat-x-bg); color: var(--cat-x); }
+
+    .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--green-gradient); color: #fff; padding: 12px 24px; border-radius: var(--radius); font-size: var(--text-body); font-weight: 600; box-shadow: var(--shadow-lg); z-index: 9999; opacity: 0; transition: all 0.3s ease; pointer-events: none; }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    @media (max-width: 768px) {
+      .product-main { flex-direction: column; }
+      .product-desc { flex: none; padding-left: 0; border-left: none; border-top: 1px solid var(--okapi-beige); padding-top: 8px; margin-top: 6px; }
+      .navigator-module .search-grid { grid-template-columns: 1fr !important; gap: 16px !important; }
+      .navigator-module .search-col-right { border-left: none !important; padding-left: 0 !important; border-top: 1px solid var(--okapi-beige) !important; padding-top: 16px !important; }
+      .filter-disclaimer-row { flex-direction: column !important; }
+    }
+    @media (max-width: 640px) {
+      .navigator-module { padding: 0 16px; }
+      .nav-header { padding: 24px 20px 22px; }
+      .search-area { padding: 16px; }
+      .product-card { padding: 12px 14px; gap: 8px; }
+      .product-icon { width: 30px; height: 30px; font-size: 11px; }
+      .toolbar-actions { width: 100%; }
+      .toolbar-btn { flex: 1; justify-content: center; font-size: 11px; padding: 8px 10px; }
+      .results-toolbar { flex-direction: column; align-items: stretch; }
+      .disease-pill { font-size: 11px; padding: 6px 10px 6px 12px; }
+      .control-box { min-width: 100%; }
+      .product-desc { font-size: 11px; }
+    }
+    @media print {
+      body { background: #fff; }
+      .search-area, .toolbar-actions, .controls-area, .nav-header, .product-cb { display: none !important; }
+      .product-card { break-inside: avoid; box-shadow: none; border: 1px solid #ccc; }
+      .navigator-module { max-width: 100%; padding: 0; }
+    }
+  </style>
+</head>
+<body>
+<div class="navigator-module" id="navigatorModule">
+  <div class="nav-header">
+    <div class="nav-header-label">Therapeuten-Tool</div>
+    <h1>OKAPI <em>Produkt-Navigator</em></h1>
+    <p>Wähle bis zu drei Diagnosen aus und erhalte eine individuell priorisierte Produktempfehlung. Die ausgewählten Produkte kannst du direkt in den Therapie- oder Futterplan der Sanoanimal Praxis-Software übernehmen – dort passt du Tagesdosis (nach Gewicht des Pferdes), Zeitplan und Behandlungsablauf individuell an.</p>
+  </div>
+
+  <div class="search-area">
+    <div class="search-grid">
+      <div class="search-col-left">
+        <div class="search-area-label">Bis zu 3 Diagnosen auswählen</div>
+        <div class="search-input-wrap">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>
+          <input type="text" class="search-input" id="searchInput" placeholder="Krankheit eingeben, z. B. Hufrehe, Cushing, Kotwasser …" autocomplete="off" />
+          <div class="dropdown" id="dropdown"></div>
+        </div>
+        <div class="selected-diseases" id="selectedDiseases"></div>
+        <div class="max-hint" id="maxHint"></div>
+      </div>
+      <div class="search-col-right">
+        <div class="search-area-label">Pferdegewicht</div>
+        <div class="weight-field-stack">
+          <div class="weight-field">
+            <input type="number" id="horseWeight" min="100" max="1200" step="10" value="600" class="weight-input" />
+            <span class="weight-unit">kg</span>
+          </div>
+          <span class="weight-hint">Standard = 600 kg.<br/>Tagesdosis wird proportional angepasst.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="controls-area" id="controlsArea">
+    <div class="legend-bar">
+      <div class="legend-item"><div class="legend-dot" style="background:var(--cat-1)"></div> Besonders geeignet</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--cat-2)"></div> Empfohlen</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--cat-3)"></div> Optional / ergänzend</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--cat-4)"></div> Basisversorgung</div>
+      <div class="legend-divider"></div>
+      <div class="legend-item"><span class="product-type-badge product-type-F" style="font-size:9px;padding:1px 5px;">GF</span> Grundfütterung</div>
+      <div class="legend-item"><span class="product-type-badge product-type-P" style="font-size:9px;padding:1px 5px;">GP</span> Gesundheitsprodukt</div>
+      <div class="legend-item"><span class="product-type-badge product-type-M" style="font-size:9px;padding:1px 5px;">MI</span> Mineral</div>
+    </div>
+
+    <div class="filter-disclaimer-row">
+      <div class="horse-filter-box">
+        <div class="horse-filter-label">Spezialprodukte einblenden für:</div>
+        <div class="horse-filter-options" style="display:grid !important;grid-template-columns:1fr 1fr !important;gap:8px 16px !important;">
+          <label class="horse-cb-label"><input type="radio" name="horseType" id="filterNone" checked /> Keine Auswahl</label>
+          <label class="horse-cb-label"><input type="radio" name="horseType" id="filterJung" /> Jungpferd (&lt; 5 Jahre)</label>
+          <label class="horse-cb-label"><input type="radio" name="horseType" id="filterTragend" /> Tragende Stute</label>
+          <label class="horse-cb-label"><input type="radio" name="horseType" id="filterSenior" /> Seniorpferd (&gt; 20 Jahre)</label>
+        </div>
+      </div>
+      <div class="disclaimer">
+        <p><strong>Hinweis:</strong> Alle Empfehlungen dienen der allgemeinen Orientierung für die Fütterungsberatung und ersetzen keine tierärztliche Diagnose oder Therapie. Die Priorisierungen basieren auf der Sanoanimal &amp; OKAPI Produkt- und Diagnosematrix (Stand: März 2026).</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="results-area" id="resultsArea">
+    <div class="results-empty">
+      <div class="results-empty-icon">&#x1F50D;</div>
+      <h3>Noch keine Diagnose gewählt</h3>
+      <p>Gib oben eine Krankheit ein, um die passenden OKAPI-Produkte zu sehen.</p>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const DATA = {
+  diseases: ["Allergien / Hautallergien","Angelaufene Beine","Arthrose","Atemwegserkrankungen","Bänder- und Sehnenverletzungen","Bewegungsunlust/ Steifheit","Blähungen","Cushing","Dämpfigkeit","Darmdysbiose","Durchfall","Ektoparasiten (Milben, Haarlinge)","EMS","Endoparasiten (Würmer, Dassellarven)","EOTRH akut","EOTRH chronisch","Fellverlust","Fellwechselprobleme","Haarausfall","Hautinfekte","Headshaking","Herz-Kreislauf-Probleme","Hufabzess","Hufinfektionskrankheiten","Hufrehe","Hufrollensyndrom/ Podotrochlose","Husten akut","Husten chronisch","Infektanfälligkeit","Insulinresistenz","Juckreiz","Kolik Darmverlagerung","Kolik Gas","Kolik Kreislauf","Kolik Verstopfung","Koppen","Kotwasser","KPU (Kryptopyrrolurie)","Kreuzverschlag","Leaky-Gut-Syndrom","Leberstörungen (keine KPU!)","Magenaufgasung / Rülpsen","Magengeschwüre","Mauke/ Raspe","MIM / PSSM2","Muskelverspannungen","Myopathien / Muskelerkrankungen","Nierenstörungen","Ödeme","Pilzinfektionen","Pseudo-EMS","PSSM1","Schreckhaftigkeit","(Sommer-)ekzem","Spat","Stereotypen (Weben, Koppen, Manegelaufen...)","Strahlfäule","Stress/ Nervosität","Tying-up","Übergewicht","Untergewicht","Verdauungsprobleme","Vergiftungen/ Toxinbelastung","Weben","White Line Disease","Zahnkrankheiten"],
+  products: [
+    {name:"AdrenaCush forte",type:"P",special:null,m:{3:2,7:1,14:3,15:3,17:2,21:1,52:3,57:2},desc:"Kräutermischung zur Unterstützung des Hormonstoffwechsels. Reguliert die Nebennierenfunktion, hilfreich bei Cushing-assoziierten Symptomen wie Fellwechselproblemen und Steifheit.",ingr:"Kräutermischung (Mönchspfeffer, Ginkgo, Mariendistelsamen, Weihrauch, Süßholzwurzel, Bockshornklee). Zusatzstoffe: Zink (als Glycin-Zinkchelat-Hydrat)."},
+    {name:"Bergkern",type:"F",special:null,m:{0:4,1:4,2:4,3:4,4:4,5:4,6:4,7:4,8:4,9:4,10:4,11:4,12:4,13:4,14:4,15:4,16:4,17:4,18:4,19:4,20:4,21:4,22:4,23:4,24:4,25:4,26:4,27:4,28:4,29:4,30:4,31:4,32:4,33:4,34:4,35:4,36:4,37:4,38:4,39:4,40:4,41:4,42:4,43:4,44:4,45:4,46:4,47:4,48:4,49:4,50:4,51:4,52:4,53:4,54:4,55:4,56:4,57:4,58:4,59:4,60:4,61:4,62:4,63:4,64:4,65:4},desc:"Getreidefreie Raufutter-Ergänzung aus alpinen Kräutern und Gräsern. Liefert natürliche Rohfaser und sekundäre Pflanzenstoffe als Grundfutterkomponente.",ingr:"Bergkräuter und -gräser aus alpiner Höhenlage. Einzelfuttermittel."},
+    {name:"Beruhigungskräuter",type:"P",special:null,m:{4:2,7:2,20:2,23:2,30:3,31:3,32:3,33:3,34:3,35:1,41:2,42:2,47:3,52:1,55:1,56:3,57:1,60:2,63:1,64:2,65:3},desc:"Kräutermischung mit sedativer Wirkung. Unterstützt das Nervensystem, reduziert Stress, wirkt beruhigend bei Koppen, Weben und Schreckhaftigkeit.",ingr:"Hopfenzapfen, Eisenkraut, Melisse, Baldrianwurzel, Passionsblume, Kamille, Lavendelblüten, Ashwagandawurzel, Zimt."},
+    {name:"Bitterkräuter",type:"P",special:null,m:{0:2,3:2,6:2,8:2,9:1,10:1,11:1,12:2,13:1,14:2,15:2,16:2,18:2,20:2,23:1,24:1,25:2,27:1,28:1,29:2,31:1,32:2,33:1,34:1,36:1,37:1,39:1,40:1,49:2,52:3,53:2,56:2,57:3,59:2,60:2,61:1,62:2,64:1},desc:"Regen die Verdauungssäfte und Peristaltik an. Wirken regulierend auf Darmmilieu und Lebermetabolismus. Erste Wahl bei Dysbiosen, Kotwasser und Entgiftung.",ingr:"Schafgarbe, Queckenwurzel, Kümmel, Eichenrinde, Brombeerblätter, Löwenzahn, Wermut."},
+    {name:"ColoBalance",type:"P",special:null,m:{0:2,3:2,6:1,7:3,8:2,9:1,10:1,23:2,24:2,25:3,27:2,28:2,31:1,32:1,33:1,34:1,36:1,37:2,39:1,53:3,56:3,60:2,61:1,64:2},desc:"Natürliches Leonardit mit bis zu 70 % Huminsäuren. Stabilisiert das Darmmilieu und die Darmwand, ideal zur Begleitung von Darmsanierungen.",ingr:"Leonardit (98%), Lignocellulose (2%). Reich an Huminsäuren (bis zu 70%)."},
+    {name:"ColoProtect forte",type:"P",special:null,m:{6:3,9:2,10:1,13:3,31:3,32:3,34:3,36:1,39:1,57:3,61:2},desc:"Regeneriert Darmschleimhaut und -milieu. Bewährt als Sofortmaßnahme bei Kotwasser und Durchfall, unterbricht den Kreislauf aus Reizung und Entzündung.",ingr:"Kräutermischung (Fenchel, Kamille u.a.), Beta-Glucan, Bentonit, Heilerde. Zusatzstoffe: Klinoptilolith."},
+    {name:"ColoRazza",type:"P",special:null,m:{6:3,9:2,10:2,31:3,32:3,34:3,36:3,37:3,39:3,41:2,61:2},desc:"Fermentierte Kräuter zur Unterstützung des Darmmilieus. Liefert nützliche Mikroorganismen und fördert die Verdauungsaktivität im Dickdarm.",ingr:"Fermentierte Kräutermischung mit nützlichen Mikroorganismen."},
+    {name:"Darmwohlkräuter",type:"P",special:null,m:{0:3,3:2,6:1,7:2,8:2,9:1,10:2,11:2,12:2,13:2,14:2,15:2,20:2,23:2,24:1,25:2,27:2,29:2,31:2,32:1,36:2,37:2,39:2,49:2,53:2,56:2,57:3,59:2,60:2,61:1,64:2},desc:"Anis, Kümmel, Fenchel und Kamillenblüten beruhigen den Magen-Darm-Trakt. Wirken krampflösend bei Blähungen und unterstützen die Darmflora.",ingr:"Kamillenblüten, Thymian, Rosmarin, Fenchel, Salbeiblätter, Kümmel, Majoran, Olivenblätter, Anis."},
+    {name:"Elektrolyt-Konzentrat",type:"P",special:null,m:{10:1,21:2,52:3},desc:"Liefert Natrium, Kalium und Magnesium. Gleicht Elektrolytverluste bei Durchfall, Schwitzen oder Kreislaufbelastung aus.",ingr:"Natriumchlorid, Kaliumchlorid, Magnesiumoxid, Dextrose."},
+    {name:"EndoProtect",type:"P",special:null,m:{6:3,9:3,24:2,27:2,30:3,36:3,37:3,39:3,40:3,43:3,45:2,47:2,48:2,49:3,53:2,61:2,62:1},desc:"Bindet Mykotoxine und Endotoxine im Darm. Entlastet den Stoffwechsel bei belasteter Futterqualität und unterstützt Leber- und Nierenfunktion.",ingr:"Klinoptilolith sedimentären Ursprungs, Traubenkernschrot, Sojaöl."},
+    {name:"Entschlackungskräuter",type:"P",special:null,m:{0:3,1:1,4:2,5:2,12:1,17:1,19:2,20:3,22:1,23:2,24:2,25:2,30:1,37:2,40:2,43:1,45:1,47:1,48:1,49:1,50:1,53:1,56:1,59:1,62:1,64:2},desc:"Regen Lymphfluss und Ausscheidungsorgane an. Erste Wahl bei Ödemen, angelaufenen Beinen, Mauke und zur Stoffwechselentlastung.",ingr:"Birkenblätter, Brennnesselkraut, Goldrutenkraut, Brombeerblätter, Schachtelhalmkraut, Ehrenpreiskraut, Anis, Wacholderbeeren, Heidekraut, Erikablüten."},
+    {name:"Esparsette",type:"F",special:null,m:{0:2,1:3,2:2,3:3,4:3,5:2,6:2,7:2,8:3,9:1,10:2,11:1,12:3,13:1,14:1,15:1,16:2,17:2,18:2,20:3,23:2,24:1,27:1,28:2,29:2,31:2,32:2,33:3,34:2,36:1,37:1,38:3,39:1,40:1,41:2,42:2,43:3,44:1,45:2,46:1,49:2,50:2,51:1,52:3,53:2,56:2,57:3,58:3,59:3,60:1,61:1,62:2,64:2,65:2},desc:"Getreidefreie Kraftfutter-Alternative mit kondensierten Tanninen. Stabilisiert das Darmmilieu, liefert hochwertiges Protein mit gutem Aminosäurenprofil.",ingr:"100% Esparsette (Onobrychis viciifolia), pelletiert. Einzelfuttermittel."},
+    {name:"Fix & Fertig Esparsette",type:"F",special:null,m:{0:2,1:3,2:2,3:3,4:3,5:2,6:2,7:2,8:3,9:1,10:2,11:1,12:3,13:1,16:2,17:2,18:2,20:3,23:2,24:1,27:1,28:2,29:2,31:2,32:2,33:3,34:2,36:1,37:1,38:3,39:1,40:1,41:2,42:2,43:3,44:1,45:2,46:1,49:2,50:2,51:1,52:3,53:2,56:2,57:3,58:3,59:3,60:1,61:1,62:2,64:2},desc:"Sofort fütterbare Esparsette ohne Einweichen. Gleiche Vorteile wie Esparsette-Cobs, besonders praktisch für Stallalltag und Therapiebegleitung.",ingr:"100% Esparsette (Onobrychis viciifolia), geschnitten, sofort fütterbar. Einzelfuttermittel."},
+    {name:"Fix & Fertig Luzerne",type:"F",special:null,m:{2:3,7:2,45:3,46:2,51:2,60:1,61:2},desc:"Sofort fütterbare, getreidefreie Luzerne. Hoher Lysingehalt unterstützt Muskelaufbau, wertvoll bei Untergewicht und für Sportpferde.",ingr:"100% Luzerne (Medicago sativa), geschnitten, sofort fütterbar. Einzelfuttermittel."},
+    {name:"Ganze Flohsamen",type:"P",special:null,m:{7:3,10:1,12:1,29:1,34:2,36:1,39:1,57:3,59:1,61:2},desc:"Quellen im Darm und binden Wasser wie ein Schwamm. Regulieren Verdauung bei Kotwasser, Durchfall und Verstopfungskolik. Sättigend bei Übergewicht.",ingr:"100% Flohsamen (Plantago ovata). Einzelfuttermittel."},
+    {name:"GasterCare forte",type:"P",special:null,m:{6:3,7:2,8:3,10:3,14:3,15:3,23:3,31:3,32:3,33:3,34:3,35:1,36:2,39:2,41:1,42:1,52:2,55:1,56:3,57:1,60:2,63:1,64:3,65:2},desc:"Lecithin, Weihrauch, Kolostrum und Trockenmoor schützen die Magenschleimhaut. Erste Wahl bei Magengeschwüren, Magenaufgasung und stressbedingten Magenproblemen.",ingr:"Lecithin, Weihrauch, Kolostrum, Trockenmoor, Oregano, Neemblätter, Natriumbicarbonat, Traubenkernpulver, Acerolapulver, Maytenus ilicifolia."},
+    {name:"Hagebutten",type:"F",special:null,m:{0:4,1:4,2:1,3:4,4:4,5:4,6:4,7:4,8:4,9:4,10:4,11:4,13:4,14:4,15:4,16:4,17:4,18:4,19:4,20:4,21:4,22:4,23:4,24:4,25:4,26:4,27:4,28:4,29:4,30:4,31:4,32:4,33:4,34:4,35:4,36:4,37:4,38:4,39:4,40:4,41:4,42:4,43:4,44:4,45:4,46:4,47:4,48:4,49:4,50:4,51:4,52:4,53:4,54:4,55:4,56:4,57:4,58:4,60:4,61:4,62:4,63:4,64:4,65:"x"},desc:"Natürlich reich an Vitamin C und Antioxidantien. Unterstützen das Immunsystem und Bindegewebe, besonders wertvoll bei Arthrose.",ingr:"100% Hagebutten (Rosa canina), ganz. Einzelfuttermittel."},
+    {name:"HeparKPU forte",type:"P",special:null,m:{4:2,5:2,6:2,8:3,9:1,10:3,12:3,16:3,17:3,18:3,20:2,23:3,24:3,25:3,27:2,28:3,29:3,30:3,31:2,32:2,34:3,36:2,37:1,39:3,43:3,45:2,47:3,50:3,52:3,53:2,56:3,59:3,60:2,61:1,62:3,64:3},desc:"Speziell für Pferde mit Kryptopyrrolurie (KPU). Unterstützt die Leberfunktion und den Zink-/B6-Stoffwechsel, der bei KPU gestört ist.",ingr:"Cranberry-Fruchtpulver, MSM, Sanddorn-Fruchtpulver, Salbeiblätter, Süßholzsaft, Origanum, Bischofskümmel, Lapachorinde. Zusatzstoffe: Zink (als Glycin-Zinkchelat-Hydrat), Vitamin B6 (P5P), Vitamin B12."},
+    {name:"Heucobs sugar light",type:"F",special:null,m:{1:3,2:3,4:3,6:3,7:3,9:3,10:2,12:2,14:1,15:1,24:2,29:2,31:1,32:1,33:1,34:1,36:3,38:1,39:3,41:1,42:3,44:1,46:1,50:3,51:1,52:3,57:3,58:1,59:2,60:1,61:3,65:2},desc:"Zuckerarmer Heuersatz, einweichbar. Ideal bei EOTRH, Zahnproblemen, Koliken und Stoffwechselerkrankungen. Sicher bei EMS und Hufrehe.",ingr:"Heu, pelletiert, zuckerreduziert. Einzelfuttermittel."},
+    {name:"HoofCool forte",type:"P",special:null,m:{24:1,47:3,48:3},desc:"Kapillarweitende und gerinnungsfördernde Kräuter plus Weihrauch und MSM. Sofortmaßnahme bei Hufrehe, regt Durchblutung im Huf an.",ingr:"Kräutermischung (kapillarweitende Kräuter), Weihrauch, MSM, Klinoptilolith. Zusatzstoffe: Zink, Selen."},
+    {name:"Hustenkräuter",type:"P",special:null,m:{3:1,8:1,26:1},desc:"Traditionelle Kräutermischung für die Atemwege. Wirkt schleimlösend und beruhigend bei akutem Husten und Atemwegserkrankungen.",ingr:"Eibischblätter, Pfefferminze, Salbeiblätter, Spitzwegerich, Thymian, Schwarzkümmel."},
+    {name:"Imuno Kräuter",type:"P",special:null,m:{0:1,3:2,7:3,8:2,9:2,10:2,14:1,15:2,16:2,18:2,19:1,20:2,21:2,23:1,26:3,27:3,28:1,30:2,37:3,43:3,47:3,48:2,49:1,53:2,56:1,61:3,62:3,64:1},desc:"Immunstärkende Kräutermischung. Unterstützt die körpereigene Abwehr bei Infektanfälligkeit, Hautinfekten, Pilzbefall und Allergien.",ingr:"Echinacea, Thuja, Hagebutten, Taigawurzel, Propolis, Thymian, Sonnenhut."},
+    {name:"Juniormineral",type:"M",special:"gelb",m:{},desc:"Mineralfutter speziell für Jungpferde im Wachstum. Abgestimmte Gehalte an Zink, Kupfer und Mangan für Skelettentwicklung und Hornqualität.",ingr:"Mineralfutter mit angepassten Gehalten an Zink, Kupfer, Mangan und Selen für Jungpferde."},
+    {name:"Juniormineral Leckschale",type:"M",special:"gelb",m:{},desc:"Leckschale-Version des Juniorminerals zur freien Aufnahme. Bedarfsgerechte Selbstversorgung für Jungpferde auf der Weide.",ingr:"Mineralfutter-Leckschale für Jungpferde. Mengen- und Spurenelemente."},
+    {name:"Junior Support",type:"P",special:"gelb",m:{},desc:"Ergänzungsfutter für Jungpferde mit erhöhtem Nährstoffbedarf in Wachstumsphasen. Unterstützt Knochen- und Muskelentwicklung.",ingr:"Kräuter- und Nährstoffmischung für Jungpferde im Wachstum."},
+    {name:"Kekse, Clickerlis und Biostickies",type:"F",special:null,m:{0:4,1:4,2:4,3:4,4:4,5:4,6:4,7:4,8:4,9:4,10:4,11:4,12:4,13:4,14:4,15:4,16:4,17:4,18:4,19:4,20:4,21:4,22:4,23:4,24:4,25:4,26:4,27:4,28:4,29:4,30:4,31:4,32:4,33:4,34:4,35:4,36:4,37:4,38:4,39:4,40:4,41:4,42:4,43:4,44:4,45:4,46:4,47:4,48:4,49:4,50:4,51:4,52:4,53:4,54:4,55:4,56:4,57:4,58:4,59:4,60:4,61:4,62:4,63:4,64:4,65:4},desc:"Handgemachte, getreidefreie Leckerlis aus der Berliner Manufaktur. Zuckerarm, auch für stoffwechselempfindliche Pferde geeignet.",ingr:"Verschiedene getreidefreie Leckerli-Varianten aus der Berliner Manufaktur. Zutaten je nach Sorte."},
+    {name:"Kieselgur Plus",type:"P",special:null,m:{2:3,4:1,5:2,21:3,25:1,37:3,45:3,54:2},desc:"Reines Silizium (Diatomeenerde). Stärkt Sehnen, Bänder und Bindegewebe. Unterstützt die Regeneration bei Hufrollensyndrom und Sehnenläsionen.",ingr:"Kieselgur (Diatomeenerde, gereinigt), Leinsamen, Schwarzkümmel. Zusatzstoffe: Kieselgur (E551c)."},
+    {name:"Kräuterweide",type:"F",special:null,m:{0:4,1:4,2:4,3:4,4:4,5:4,6:4,7:4,8:4,9:4,10:4,11:4,12:4,13:4,14:4,15:4,16:4,17:4,18:4,19:4,20:4,21:4,22:4,23:4,24:4,25:4,26:4,27:4,28:4,29:4,30:4,31:4,32:4,33:4,34:4,35:4,36:4,37:4,38:4,39:4,40:4,41:4,42:4,43:4,44:4,45:4,46:4,47:4,48:4,49:4,50:4,51:4,52:4,53:4,54:4,55:4,56:4,57:4,58:4,59:4,60:4,61:4,62:4,63:4,64:4,65:4},desc:"Aromatische Wiesenkräutermischung als Heu-Ergänzung. Fördert die natürliche Vielfalt im Futtertrog, wie auf einer artenreichen Weide.",ingr:"Spitzwegerich, Löwenzahnkraut mit Wurzel, Fenchel, Bibernelle, Brennnesselkraut, Schafgarbenkraut, Labkraut, Vogelknöterich, Wegwartenkraut, Rotkleeblüten, Kamillenblüten, Frauenmantelkraut, Ehrenpreiskraut, Schachtelhalmkraut, Wilde Möhrenkraut, Wiesenkerbel, Wiesenknopfkraut, Wiesenkümmel, Koriander, Arnikablüten."},
+    {name:"Kupfer Plus",type:"P",special:null,m:{16:3,17:3,18:3,19:3,23:3,28:3,30:3,49:3,64:3},desc:"Organisch gebundenes Kupfer als Einzelfuttermittel. Ergänzt bei nachgewiesenem Kupfermangel, unterstützt Immunsystem und Hornqualität.",ingr:"Kieselgur (Diatomeenerde). Zusatzstoffe: Kupfer (als Glycin-Kupferchelat-Hydrat)."},
+    {name:"Lapachorinde",type:"P",special:null,m:{0:2,3:2,6:1,7:2,8:2,9:1,10:1,11:1,12:2,13:1,14:2,15:2,23:2,24:1,25:2,27:2,28:1,29:2,31:1,32:1,33:2,34:1,36:1,37:1,39:1,41:1,42:2,53:2,56:2,59:2,60:2,61:1,64:2},desc:"Antimikrobielle und darmstabilisierende Rinde. Ideal im Rahmen von Darmsanierungen, kurweise zusammen mit Bitterkräutern über 6 Wochen.",ingr:"Lapachorinde (Handroanthus), gemahlen. Einzelfuttermittel."},
+    {name:"Laub & Rinden",type:"F",special:null,m:{0:4,1:4,2:4,3:4,4:4,5:4,6:4,7:4,8:4,9:4,10:4,11:4,12:4,13:4,14:4,15:4,16:4,17:4,18:4,19:4,20:4,21:4,22:4,23:4,24:4,25:4,26:4,27:4,28:4,29:4,30:4,31:4,32:4,33:4,34:4,35:4,36:4,37:4,38:4,39:4,40:4,41:4,42:4,43:4,44:4,45:4,46:4,47:4,48:4,49:4,50:4,51:4,52:4,53:4,54:4,55:4,56:4,57:4,58:4,59:4,60:4,61:4,62:4,63:4,64:4,65:4},desc:"Naturnahes Mischfutter aus Laub und Rinden verschiedener Baumarten. Liefert Gerbstoffe und Rohfaser als Grundfutterergänzung.",ingr:"Mischung aus Laub und Rinden verschiedener Baumarten (Birke, Haselnuss, Weide u.a.). Einzelfuttermittel."},
+    {name:"Lax Flohsamenschalen",type:"P",special:null,m:{9:3,10:1,31:3,32:3,34:2,36:1,39:1,61:2},desc:"Flohsamenschalen saugen Kotwasser wie ein Schwamm auf. Regulieren die Darmpassage und unterbrechen den Reizkreislauf bei Durchfall.",ingr:"100% Flohsamenschalen (Plantago ovata). Einzelfuttermittel."},
+    {name:"L-Carnitin Plus",type:"P",special:null,m:{1:2,2:3,5:2,7:3,21:1,33:1,36:3,45:3,54:3},desc:"Unterstützt den Fettstoffwechsel und die Herzmuskulatur. Erste Wahl bei Herz-Kreislauf-Problemen, fördert die Energieversorgung der Muskulatur.",ingr:"Dextrose, Magnesiumoxid. Zusatzstoffe: L-Carnitin."},
+    {name:"Leberpflege",type:"P",special:null,m:{37:"x",40:1,62:1},desc:"Kräutermischung zur Unterstützung der Leberfunktion. Ideal bei erhöhten Leberwerten und Toxinbelastung. Nicht geeignet bei KPU.",ingr:"Mariendistelsamen, Artischockenblätter, Löwenzahnwurzel, Schafgarbenkraut."},
+    {name:"Lymeth",type:"P",special:null,m:{4:3,5:3,16:3,17:3,18:3,19:3,21:3,38:3,39:3,44:2,45:3,46:2,50:3,51:2,57:3,58:3,60:1},desc:"Essentielle Aminosäurenmischung (Lysin, Methionin u. a.). Unterstützt den Proteinaufbau bei Untergewicht, Muskelschwund und schlechter Fellqualität.",ingr:"Sojaöl (als Staubbinder). Zusatzstoffe: L-Lysin-Monohydrochlorid, DL-Methionin, L-Threonin."},
+    {name:"OKAPI Mash Getreidefrei BronchoFit",type:"F",special:null,m:{3:1,8:1,26:1,27:1},desc:"Getreidefreies Mash mit atemwegsunterstützenden Kräutern. Optimal bei Husten und Atemwegserkrankungen, auch vorbeugend in staubigen Ställen.",ingr:"Esparsette, Luzerne, Leinsamen, Eibischblätter, Spitzwegerich, Thymian, Schwarzkümmel. Getreidefrei."},
+    {name:"OKAPI Mash Getreidefrei MagenFit",type:"F",special:null,m:{2:2,4:3,7:2,14:2,15:2,20:2,22:3,35:1,36:2,38:2,39:2,41:1,42:1,52:1,54:3,55:1,57:1,58:1,63:1,65:1},desc:"Getreidefreies Mash mit magenschützenden Zutaten. Ideal bei Magengeschwüren, Stress und Koppen, kombiniert Fütterung mit Magenpflege.",ingr:"Esparsette, Luzerne, Leinsamen, Süßholzwurzel, Kamille, Fenchel. Getreidefrei."},
+    {name:"OKAPI Mash Getreidefrei VerdauungsFit",type:"F",special:null,m:{0:3,1:3,5:3,6:1,9:1,10:1,11:3,12:3,13:3,15:2,21:3,23:2,24:1,25:3,28:2,29:3,30:3,31:1,32:1,33:1,34:1,36:1,37:2,39:1,40:3,43:3,47:3,48:3,49:2,50:3,53:1,56:2,59:3,60:2,61:1,62:3,64:2},desc:"Getreidefreies Mash für den Verdauungstrakt. Unterstützt bei Kolik-Neigung, Darmdysbiose und Kotwasser als fütterungsbasierte Sofortmaßnahme.",ingr:"Esparsette, Luzerne, Leinsamen, Anis, Kümmel, Fenchel, Kamillenblüten. Getreidefrei."},
+    {name:"Mineralbricks",type:"M",special:"lila",m:{},desc:"Mineralfutter in Brick-Form zur freien Aufnahme. Deckt den Grundbedarf an Mengen- und Spurenelementen ab, Auswahl abhängig von Heuanalyse.",ingr:"Mineralfutter in Brick-Form. Mengen- und Spurenelemente, Zusammensetzung abhängig von Variante."},
+    {name:"Mineralpellets",type:"M",special:"lila",m:{},desc:"Mineralpellets für die tägliche Grundversorgung. Pelletierte Form für gute Dosierbarkeit, Auswahl abhängig von individueller Heuanalyse.",ingr:"Mineralfutter pelletiert. Mengen- und Spurenelemente, Zusammensetzung abhängig von Variante."},
+    {name:"MuscleMIM forte",type:"P",special:null,m:{5:1,38:1,44:1,45:3,46:1,51:1,58:1},desc:"Speziell für Pferde mit Myopathien (MIM, PSSM). Unterstützt den Muskelstoffwechsel, reduziert Kreuzverschlag-Risiko und fördert die Belastbarkeit.",ingr:"Kräutermischung, essentielle Aminosäuren (L-Lysin, DL-Methionin, L-Threonin), Antioxidantien (Vitamin E, Selen), Weihrauch."},
+    {name:"Muskelmineral",type:"M",special:"lila",m:{60:1},desc:"Mineralfutter mit erhöhtem Magnesium- und Selengehalt. Speziell für Pferde mit Muskelstoffwechselproblemen und erhöhtem Proteinbedarf.",ingr:"Mineralfutter mit erhöhtem Magnesium- und Selengehalt. Mengen- und Spurenelemente."},
+    {name:"PankrEMS forte",type:"P",special:null,m:{5:2,7:3,12:1,24:3,29:1,37:3,45:2,50:1,59:1},desc:"Kräuter- und Hefemischung zur Unterstützung bei EMS und Insulinresistenz. Unterstützt die natürliche Blutzuckerregulation und den Gewichtsverlust.",ingr:"Kräutermischung (Heidelbeerblätter, Mate, Mädesüß, Geißraute, Vogelknöterich, Hagebuttenschalen, Lapacho, Stevia, Löwenzahn), Hefe (inaktiviert), Weihrauch, Grapefruitkernmehl."},
+    {name:"Pränat Plus Typ Z & K",type:"P",special:"orange",m:{},desc:"Zink- und Kupfer-Chelat für tragende Stuten in den letzten zwei Trächtigkeitsmonaten. Beugt Spurenelement-Mängeln beim Fohlen vor.",ingr:"Typ Z: Kieselgur + Zinkchelat (12.000 mg/kg). Typ K: Kieselgur + Kupferchelat (2.500 mg/kg). Im 5-Tage-Wechsel füttern."},
+    {name:"Prodic",type:"P",special:null,m:{1:1,6:1,9:1,10:2,22:1,23:3,24:1,25:2,27:3,29:2,30:1,31:1,32:1,34:3,36:2,37:2,39:2,40:1,41:1,43:1,45:1,47:1,48:1,49:2,50:1,53:1,56:2,61:1,62:1,64:3},desc:"Probiotische Unterstützung für den Darm. Fördert nützliche Darmbakterien, hilft bei Blähungen, unterstützt Leber, Nieren und Hufgesundheit.",ingr:"Traubenkernschrot, Sojaöl. Zusatzstoffe: Klinoptilolith sedimentären Ursprungs (780.000 mg/kg)."},
+    {name:"Relax",type:"P",special:null,m:{4:3,7:2,10:2,23:2,30:3,31:3,32:3,33:3,34:3,35:1,41:2,42:2,47:3,48:3,52:1,55:1,56:3,57:1,60:2,63:1,64:2,65:3},desc:"Stärkere Kräutermischung zur Beruhigung des Nervensystems. Für Pferde mit ausgeprägter Nervosität, Magengeschwür-Neigung und Stereotypien.",ingr:"Dextrose, Magnesiumoxid. Zusatzstoffe: L-Tryptophan (15%)."},
+    {name:"Schwefel Plus (MSM)",type:"P",special:null,m:{0:1,2:1,3:1,4:3,7:2,8:1,9:2,14:1,15:1,16:1,17:1,18:1,19:1,21:2,22:1,23:1,24:1,25:1,26:3,27:1,28:3,29:1,30:1,36:3,37:1,38:2,39:3,43:1,44:2,46:2,47:2,48:2,49:2,51:2,53:1,54:1,56:1,58:2,60:3,61:2,64:1},desc:"Reines MSM (organischer Schwefel). Essenziell für Hornstrukturen, Fell und Bindegewebe. Breit einsetzbar bei Huf-, Haut- und Gelenkproblemen.",ingr:"100% Methylsulfonylmethan (MSM). Schwefelgehalt: 34%. Einzelfuttermittel."},
+    {name:"Seealgenmehl",type:"P",special:"lila",m:{37:3,53:2},desc:"Natürliche Jodquelle aus Meeresalgen. Ergänzt bei nachgewiesenem Jodmangel, kann bei Sommerekzem unterstützend wirken. Dosierung beachten.",ingr:"100% Seealgenmehl (Ascophyllum nodosum). Natürliche Jodquelle. Einzelfuttermittel."},
+    {name:"Sekretosan",type:"P",special:null,m:{3:1,8:1,27:1,28:3},desc:"Kräutermischung zur Lösung festsitzenden Schleims in den Atemwegen. Ideal bei chronischem Husten und Dämpfigkeit in Kombination mit Hustenkräutern.",ingr:"Brunnenkresse, Eibisch, Fenchel, Brokkoli, Thymian, Islandmoos, Gewürznelken, Süßholzwurzel, Eichenrinde. Pelletiert."},
+    {name:"Seniormineral",type:"M",special:"gelb",m:{},desc:"Mineralfutter für ältere Pferde (ab ca. 20 Jahre). Angepasste Gehalte an Zink, Selen und Mangan für den verlangsamten Seniorenstoffwechsel.",ingr:"Mineralfutter für Senioren. Angepasste Gehalte an Zink, Selen, Mangan. Mengen- und Spurenelemente."},
+    {name:"Senior Support",type:"P",special:"gelb",m:{},desc:"Ergänzungsfutter für Senioren mit erhöhtem Nährstoffbedarf. Unterstützt den alternden Stoffwechsel, Muskelerhalt und das Immunsystem.",ingr:"Kräuter- und Nährstoffmischung für ältere Pferde mit erhöhtem Bedarf."},
+    {name:"Spirulina",type:"P",special:null,m:{0:3,1:1,4:2,7:3,12:2,17:2,19:2,22:1,23:2,24:2,25:2,28:3,29:3,30:1,37:2,40:1,43:1,45:1,47:1,48:1,49:1,50:1,56:1,59:2,60:2,62:1,64:2},desc:"Mikroalge mit hohem Eiweißanteil und gutem Aminosäurenprofil. Entgiftend, unterstützt Muskelaufbau. Ideal wochenweise im Wechsel mit Prodic.",ingr:"100% Spirulina platensis, gemahlen. Einzelfuttermittel."},
+    {name:"Spirulina Pellets",type:"P",special:null,m:{0:3,1:1,4:2,7:3,12:2,17:2,19:2,22:1,23:2,24:2,25:2,28:3,29:3,30:1,37:2,40:1,43:1,45:1,47:1,48:1,49:1,50:1,56:1,59:2,60:2,62:1,64:2},desc:"Pelletierte Spirulina-Form für bessere Akzeptanz. Gleiche Wirkung wie Pulver, von vielen Pferden deutlich lieber gefressen.",ingr:"100% Spirulina platensis, pelletiert. Einzelfuttermittel."},
+    {name:"Süßholzextrakt",type:"P",special:null,m:{0:2,3:2,6:1,8:2,10:3,27:1,28:3,31:3,32:3,37:1,39:2,41:3,61:3},desc:"Wirkt gegen Schleimhautentzündungen in Darm und Atemwegen. Kurweise max. 2–3 Wochen geben. Nicht bei Hufrehe oder Fühligkeit.",ingr:"Süßholzwurzelsaft, getrocknet und gemahlen. Natürlicher Zuckergehalt ca. 20%. Einzelfuttermittel."},
+    {name:"Synofit",type:"P",special:null,m:{2:1,4:3,21:3,54:1},desc:"Gelenknährstoff-Komplex für Knorpel und Synovialflüssigkeit. Erste Wahl bei Arthrose und Spat, unterstützt die Gelenkfunktion langfristig.",ingr:"100% Glucosaminsulfat (fermentativ hergestellt). Einzelfuttermittel."},
+    {name:"Teufelskralle",type:"P",special:null,m:{2:1,5:3,25:3,54:2},desc:"Bewährtes Phytotherapeutikum mit entzündungshemmender Wirkung auf Gelenke. Ideal bei Arthrose und Spat, kurweise einsetzbar.",ingr:"100% Teufelskrallenwurzel (Harpagophytum procumbens), gemahlen. Einzelfuttermittel."},
+    {name:"Topinambur",type:"P",special:null,m:{10:3,36:2,39:2},desc:"Reich an Inulin (Präbiotikum). Fördert nützliche Darmbakterien, unterstützt die Darmflora bei Kotwasser und Leaky-Gut-Syndrom.",ingr:"100% Topinambur (Helianthus tuberosus), oberirdischer Pflanzenteil, pelletiert. Einzelfuttermittel."},
+    {name:"Vierjahreszeiten Fellwechsel",type:"F",special:null,m:{0:4,1:4,2:4,3:4,4:4,5:4,6:4,7:4,8:4,9:4,10:4,11:4,12:4,13:4,14:4,15:4,16:4,17:4,18:4,19:4,20:4,21:4,22:4,23:4,24:4,25:4,26:4,27:4,28:4,29:4,30:4,31:4,32:4,33:4,34:4,35:4,36:4,37:4,38:4,39:4,40:4,41:4,42:4,43:4,44:4,45:4,46:4,47:4,48:4,49:4,50:4,51:4,52:4,53:4,54:4,55:4,56:4,57:4,58:4,59:4,60:4,61:4,62:4,63:4,64:4,65:4},desc:"Saisonale Kräutermischung für den Fellwechsel. Unterstützt den Organismus in der stoffwechselintensiven Fellwechselzeit.",ingr:"Saisonale Kräutermischung für den Fellwechsel. Zusammensetzung saisonabhängig."},
+    {name:"Vierjahreszeiten Frühlingsgefühle",type:"F",special:null,m:{0:4,1:4,2:4,3:4,4:4,5:4,6:4,7:4,8:4,9:4,10:4,11:4,12:4,13:4,14:4,15:4,16:4,17:4,18:4,19:4,20:4,21:4,22:4,23:4,24:4,25:4,26:4,27:4,28:4,29:4,30:4,31:4,32:4,33:4,34:4,35:4,36:4,37:4,38:4,39:4,40:4,41:4,42:4,43:4,44:4,45:4,46:4,47:4,48:4,49:4,50:4,51:4,52:4,53:4,54:4,55:4,56:4,57:4,58:4,59:4,60:4,61:4,62:4,63:4,64:4,65:4},desc:"Frühlings-Kräutermischung für den Anweide-Übergang. Unterstützt den Stoffwechsel bei der Futterumstellung auf frisches Gras.",ingr:"Frühlings-Kräutermischung für die Anweidezeit. Zusammensetzung saisonabhängig."},
+    {name:"Vierjahreszeiten Herbsttage",type:"F",special:null,m:{0:4,1:4,2:4,3:4,4:4,5:4,6:4,7:4,8:4,9:4,10:4,11:4,12:4,13:4,14:4,15:4,16:4,17:4,18:4,19:4,20:4,21:4,22:4,23:4,24:4,25:4,26:4,27:4,28:4,29:4,30:4,31:4,32:4,33:4,34:4,35:4,36:4,37:4,38:4,39:4,40:4,41:4,42:4,43:4,44:4,45:4,46:4,47:4,48:4,49:4,50:4,51:4,52:4,53:4,54:4,55:4,56:4,57:4,58:4,59:4,60:4,61:4,62:4,63:4,64:4,65:4},desc:"Herbst-Kräutermischung zur Vorbereitung auf die Wintersaison. Unterstützt Immunsystem und Stoffwechselumstellung.",ingr:"Herbst-Kräutermischung. Zusammensetzung saisonabhängig."},
+    {name:"Vierjahreszeiten Sommerkräuter",type:"F",special:null,m:{0:4,1:4,2:4,3:4,4:4,5:4,6:4,7:4,8:4,9:4,10:4,11:4,12:4,13:4,14:4,15:4,16:4,17:4,18:4,19:4,20:4,21:4,22:4,23:4,24:4,25:4,26:4,27:4,28:4,29:4,30:4,31:4,32:4,33:4,34:4,35:4,36:4,37:4,38:4,39:4,40:4,41:4,42:4,43:4,44:4,45:4,46:4,47:4,48:4,49:4,50:4,51:4,52:4,53:4,54:4,55:4,56:4,57:4,58:4,59:4,60:4,61:4,62:4,63:4,64:4,65:4},desc:"Sommer-Kräutermischung als Weide-Ergänzung. Bringt Vielfalt ins Futterangebot in der wärmeren Jahreszeit.",ingr:"Sommer-Kräutermischung. Zusammensetzung saisonabhängig."},
+    {name:"Vierjahreszeiten Weidestart",type:"F",special:null,m:{0:4,1:4,2:4,3:4,4:4,5:4,6:4,7:4,8:4,9:4,10:4,11:4,12:4,13:4,14:4,15:4,16:4,17:4,18:4,19:4,20:4,21:4,22:4,23:4,24:4,25:4,26:4,27:4,28:4,29:4,30:4,31:4,32:4,33:4,34:4,35:4,36:4,37:4,38:4,39:4,40:4,41:4,42:4,43:4,44:4,45:4,46:4,47:4,48:4,49:4,50:4,51:4,52:4,53:4,54:4,55:4,56:4,57:4,58:4,59:4,60:4,61:4,62:4,63:4,64:4,65:4},desc:"Kräutermischung für die Anweidezeit. Unterstützt den Darm beim Übergang auf frisches Gras und beugt Verdauungsproblemen vor.",ingr:"Kräutermischung für die Anweidezeit. Zusammensetzung saisonabhängig."},
+    {name:"Vierjahreszeiten Winterweide",type:"F",special:null,m:{0:4,1:4,2:4,3:4,4:4,5:4,6:4,7:4,8:4,9:4,10:4,11:4,12:4,13:4,14:4,15:4,16:4,17:4,18:4,19:4,20:4,21:4,22:4,23:4,24:4,25:4,26:4,27:4,28:4,29:4,30:4,31:4,32:4,33:4,34:4,35:4,36:4,37:4,38:4,39:4,40:4,41:4,42:4,43:4,44:4,45:4,46:4,47:4,48:4,49:4,50:4,51:4,52:4,53:4,54:4,55:4,56:4,57:4,58:4,59:4,60:4,61:4,62:4,63:4,64:4,65:4},desc:"Winter-Kräutermischung zur Ergänzung der reinen Heufütterung. Liefert sekundäre Pflanzenstoffe, die im Winter fehlen.",ingr:"Winter-Kräutermischung. Zusammensetzung saisonabhängig."},
+    {name:"Vitalcobs",type:"F",special:null,m:{2:3,7:1,10:3,14:1,15:1,31:3,32:3,33:3,34:3,38:3,45:3,60:1,65:1},desc:"Vitaminreiche, einweichbare Cobs. Ideal für ältere Pferde, bei Zahnproblemen und EOTRH. Guter Aufbaufuttermittel bei Untergewicht.",ingr:"Luzerne, Esparsette, Hagebutten, Leinsamen. Pelletiert, einweichbar. Einzelfuttermittel."},
+    {name:"Weidemineral Balance",type:"M",special:"lila",m:{},desc:"Mineralfutter für die Weidesaison. Gleicht typische Mineralstoff-Ungleichgewichte bei reiner Weidehaltung aus.",ingr:"Mineralfutter für die Weidesaison. Mengen- und Spurenelemente, Zusammensetzung abhängig von Heuanalyse."},
+    {name:"Weidemineral Balance Leckschale",type:"M",special:"lila",m:{},desc:"Leckschale-Version für die Weide. Ermöglicht bedarfsgerechte Selbstversorgung, besonders praktisch in Offenstallhaltung.",ingr:"Mineralfutter-Leckschale für die Weide. Mengen- und Spurenelemente."},
+    {name:"Weidemineral +Calcium",type:"M",special:"lila",m:{},desc:"Weidemineral mit erhöhtem Calcium-Anteil. Für Pferde auf calciumarmem Heu oder bei erhöhtem Calciumbedarf (z. B. Zucht).",ingr:"Mineralfutter mit erhöhtem Calciumgehalt. Mengen- und Spurenelemente."},
+    {name:"Weidemineral +Calcium Leckschale",type:"M",special:"lila",m:{},desc:"Leckschale mit erhöhtem Calcium. Kombination aus freier Aufnahme und gezielter Calciumergänzung auf der Weide.",ingr:"Mineralfutter-Leckschale mit erhöhtem Calcium. Mengen- und Spurenelemente."},
+    {name:"Wilde Beeren",type:"F",special:null,m:{0:4,1:4,2:4,3:4,4:4,5:4,6:4,7:2,8:4,9:4,10:4,11:4,12:"x",13:4,14:4,15:4,16:4,17:4,18:4,19:4,20:4,21:4,22:4,23:4,24:"x",25:4,26:4,27:4,28:4,29:"x",30:4,31:4,32:4,33:4,34:4,35:4,36:4,37:4,38:4,39:4,40:4,41:4,42:4,43:4,44:4,45:4,46:4,47:4,48:4,49:4,50:"x",51:4,52:4,53:4,54:4,55:4,56:4,57:4,58:4,59:"x",60:4,61:4,62:4,63:4,64:4,65:"x"},desc:"Beerenmischung als antioxidatives Zusatzfutter. Nicht geeignet bei EMS, Hufrehe und Übergewicht wegen des natürlichen Fruchtzuckergehalts.",ingr:"Mischung aus getrockneten Beeren (Heidelbeeren, Hagebutten, Aroniabeeren u.a.). Einzelfuttermittel."},
+    {name:"Wildsamen",type:"F",special:null,m:{0:4,1:4,2:4,3:4,4:4,5:4,6:4,7:2,8:4,9:4,10:4,11:4,12:"x",13:4,14:4,15:4,16:4,17:4,18:4,19:4,20:4,21:4,22:4,23:4,24:4,25:4,26:4,27:4,28:4,29:4,30:4,31:4,32:4,33:4,34:4,35:4,36:4,37:4,38:4,39:4,40:4,41:4,42:4,43:4,44:4,45:4,46:4,47:4,48:4,49:4,50:4,51:4,52:4,53:2,54:4,55:4,56:4,57:4,58:4,59:"x",60:4,61:4,62:4,63:4,64:4,65:4},desc:"Naturbelassene Samenmischung als Futterzusatz. Liefert natürliche Fettsäuren und Nährstoffe. Nicht bei EMS oder Übergewicht füttern.",ingr:"Mischung aus naturbelassenen Samen (Mariendistel, Schwarzkümmel, Fenchel u.a.). Einzelfuttermittel."},
+    {name:"Wintermineral Balance",type:"M",special:"lila",m:{},desc:"Mineralfutter für die Winterfütterung. Angepasste Zusammensetzung für reine Heufütterung ohne Weidegang.",ingr:"Mineralfutter für die Winterfütterung. Mengen- und Spurenelemente, Zusammensetzung abhängig von Heuanalyse."},
+    {name:"Zink Plus",type:"P",special:null,m:{0:1,1:1,3:2,7:2,8:2,9:1,11:2,13:2,14:3,15:2,16:1,17:1,18:1,19:1,20:2,21:2,22:1,23:1,24:1,25:1,26:3,27:3,28:1,29:3,30:1,36:3,37:1,39:3,40:2,43:1,45:2,47:2,48:2,49:2,50:1,52:2,53:1,54:2,56:1,57:2,60:3,61:1,62:2,64:1,65:2},desc:"Organisch gebundenes Zink als Einzelfuttermittel. Breit einsetzbar bei Haut-, Huf- und Fellproblemen sowie zur Immunstärkung.",ingr:"Kieselgur (Diatomeenerde). Zusatzstoffe: Zink (als Glycin-Zinkchelat-Hydrat, 12.000 mg/kg)."}
+  ]
+};
+
+// Dosierung bei 600 kg Standardpferd in Gramm pro Tag [min, max] oder [exact]
+// Quelle: okapi-online.de Fütterungsempfehlungen
+const DOSE_600 = {
+  "AdrenaCush forte": [30, 30, "2× 1 ML (1ML=15g)"],
+  "Bergkern": [50, 100, "1–2 Handvoll"],
+  "Beruhigungskräuter": [30, 50, "1 Handvoll"],
+  "Bitterkräuter": [30, 50, "1 Handvoll"],
+  "ColoBalance": [50, 50, "5 ML (1ML=10g)"],
+  "ColoProtect forte": [117, 195, "3× 3–5 ML (1ML=13g)"],
+  "ColoRazza": [30, 50, "nach Bedarf"],
+  "Darmwohlkräuter": [30, 50, "1 Handvoll"],
+  "Elektrolyt-Konzentrat": [20, 40, "2–4 ML"],
+  "EndoProtect": [30, 60, "nach Bedarf"],
+  "Entschlackungskräuter": [30, 50, "1 Handvoll"],
+  "Esparsette": [200, 500, "als Kraftfutterersatz"],
+  "Fix & Fertig Esparsette": [200, 500, "als Kraftfutterersatz"],
+  "Fix & Fertig Luzerne": [200, 500, "als Kraftfutterersatz"],
+  "Ganze Flohsamen": [30, 50, "1 Handvoll"],
+  "GasterCare forte": [60, 60, "3× 2 ML (1ML=10g)"],
+  "Hagebutten": [30, 50, "1 Handvoll"],
+  "HeparKPU forte": [10, 20, "1–2 ML (1ML=10g)"],
+  "Heucobs sugar light": [500, 1500, "als Heuersatz"],
+  "HoofCool forte": [108, 108, "3× 3 ML (1ML=12g)"],
+  "Hustenkräuter": [30, 50, "1 Handvoll"],
+  "Imuno Kräuter": [30, 50, "1 Handvoll"],
+  "Juniormineral": [25, 50, "nach Gewicht/Alter"],
+  "Juniormineral Leckschale": [null, null, "freie Aufnahme"],
+  "Junior Support": [15, 30, "nach Gewicht/Alter"],
+  "Kekse, Clickerlis und Biostickies": [null, null, "als Leckerli"],
+  "Kieselgur Plus": [20, 30, "2–3 ML (1ML=10g)"],
+  "Kräuterweide": [30, 50, "1 Handvoll"],
+  "Kupfer Plus": [3, 5, "½–1 ML (1ML=5g)"],
+  "Lapachorinde": [12, 24, "1–2 ML (1ML=12g)"],
+  "Laub & Rinden": [30, 50, "1 Handvoll"],
+  "Lax Flohsamenschalen": [20, 40, "2–4 ML"],
+  "L-Carnitin Plus": [10, 20, "1–2 ML (1ML=10g)"],
+  "Leberpflege": [30, 50, "1 Handvoll"],
+  "Lymeth": [13, 26, "1–2 ML (1ML=13g)"],
+  "OKAPI Mash Getreidefrei BronchoFit": [300, 500, "eingeweicht füttern"],
+  "OKAPI Mash Getreidefrei MagenFit": [300, 500, "eingeweicht füttern"],
+  "OKAPI Mash Getreidefrei VerdauungsFit": [300, 500, "eingeweicht füttern"],
+  "Mineralbricks": [null, null, "freie Aufnahme"],
+  "Mineralpellets": [25, 50, "nach Heuanalyse"],
+  "MuscleMIM forte": [20, 20, "2 ML (1ML=10g)"],
+  "Muskelmineral": [25, 50, "nach Heuanalyse"],
+  "PankrEMS forte": [10, 10, "1 ML (1ML=10g)"],
+  "Pränat Plus Typ Z & K": [30, 60, "2–4 ML (1ML=15g), im Wechsel"],
+  "Prodic": [36, 60, "3–5 ML (1ML=12g)"],
+  "Relax": [30, 50, "1 Handvoll"],
+  "Schwefel Plus (MSM)": [10, 20, "1–2 ML (1ML=10g)"],
+  "Seealgenmehl": [5, 10, "nach Bedarf"],
+  "Sekretosan": [20, 30, "2–3 ML"],
+  "Seniormineral": [25, 50, "nach Heuanalyse"],
+  "Senior Support": [15, 30, "nach Gewicht/Alter"],
+  "Spirulina": [34, 34, "2 ML (1ML=17g)"],
+  "Spirulina Pellets": [34, 34, "2 ML (1ML=17g)"],
+  "Süßholzextrakt": [2, 4, "1–2 ML (1ML=2g), max 2–3 Wo."],
+  "Synofit": [20, 30, "2–3 ML"],
+  "Teufelskralle": [15, 30, "nach Bedarf"],
+  "Topinambur": [50, 100, "kurweise 4–6 Wo."],
+  "Vierjahreszeiten Fellwechsel": [30, 50, "1 Handvoll"],
+  "Vierjahreszeiten Frühlingsgefühle": [30, 50, "1 Handvoll"],
+  "Vierjahreszeiten Herbsttage": [30, 50, "1 Handvoll"],
+  "Vierjahreszeiten Sommerkräuter": [30, 50, "1 Handvoll"],
+  "Vierjahreszeiten Weidestart": [30, 50, "1 Handvoll"],
+  "Vierjahreszeiten Winterweide": [30, 50, "1 Handvoll"],
+  "Vitalcobs": [200, 500, "eingeweicht füttern"],
+  "Weidemineral Balance": [25, 50, "nach Heuanalyse"],
+  "Weidemineral Balance Leckschale": [null, null, "freie Aufnahme"],
+  "Weidemineral +Calcium": [25, 50, "nach Heuanalyse"],
+  "Weidemineral +Calcium Leckschale": [null, null, "freie Aufnahme"],
+  "Wilde Beeren": [20, 40, "1 Handvoll"],
+  "Wildsamen": [20, 40, "1 Handvoll"],
+  "Wintermineral Balance": [25, 50, "nach Heuanalyse"],
+  "Zink Plus": [5, 10, "1–2 ML (1ML=5g)"]
+};
+
+function calcDose(productName, weightKg) {
+  const d = DOSE_600[productName];
+  if (!d) return null;
+  const [min600, max600, hint] = d;
+  if (min600 === null) return { text: hint, scaled: false };
+  const factor = weightKg / 600;
+  const minDose = Math.round(min600 * factor);
+  const maxDose = Math.round(max600 * factor);
+  if (minDose === maxDose) return { text: `${minDose} g/Tag (${hint})`, scaled: true };
+  return { text: `${minDose}–${maxDose} g/Tag (${hint})`, scaled: true };
+}
+
+const CAT_LABELS = { 1:"Besonders geeignet / optimal", 2:"Empfohlen", 3:"Optional / ergänzend", 4:"Generell empfohlen als Basisversorgung", "x":"Nicht geeignet bei dieser Krankheit" };
+const TYPE_LABELS = { F:"Grundfütterung", P:"Gesundheitsprodukt", M:"Mineral" };
+const SPECIAL_LABELS = { gelb:"Junge / alte Pferde", lila:"Mineral – andere Faktoren", orange:"Tragende Stuten" };
+
+let selectedDiseases = [];
+let selectedProducts = new Set();
+let activeDropdownIdx = -1;
+
+const $ = id => document.getElementById(id);
+const searchInput = $('searchInput'), dropdown = $('dropdown'), selectedContainer = $('selectedDiseases');
+const maxHint = $('maxHint'), resultsArea = $('resultsArea'), controlsArea = $('controlsArea');
+let showDescState = false;
+let showIngrState = false;
+const filterJung = $('filterJung'), filterSenior = $('filterSenior'), filterTragend = $('filterTragend');
+const toast = $('toast');
+const horseWeight = $('horseWeight');
+
+searchInput.addEventListener('input', function() {
+  const q = this.value.trim().toLowerCase();
+  if (!q) { closeDropdown(); return; }
+  const matches = [];
+  DATA.diseases.forEach((d, i) => { if (!selectedDiseases.includes(i) && d.toLowerCase().includes(q)) matches.push(i); });
+  renderDropdown(matches, q);
+});
+searchInput.addEventListener('focus', function() { if (this.value.trim()) searchInput.dispatchEvent(new Event('input')); });
+searchInput.addEventListener('keydown', function(e) {
+  if (!dropdown.classList.contains('open')) return;
+  const items = dropdown.querySelectorAll('.dropdown-item');
+  if (e.key === 'ArrowDown') { e.preventDefault(); activeDropdownIdx = Math.min(activeDropdownIdx+1, items.length-1); updateActive(items); }
+  else if (e.key === 'ArrowUp') { e.preventDefault(); activeDropdownIdx = Math.max(activeDropdownIdx-1, 0); updateActive(items); }
+  else if (e.key === 'Enter') { e.preventDefault(); if (activeDropdownIdx >= 0 && items[activeDropdownIdx]) items[activeDropdownIdx].click(); }
+  else if (e.key === 'Escape') closeDropdown();
+});
+document.addEventListener('click', e => { if (!e.target.closest('.search-input-wrap')) closeDropdown(); });
+
+function renderDropdown(matches, q) {
+  activeDropdownIdx = -1;
+  if (!matches.length) { dropdown.innerHTML = '<div class="dropdown-empty">Keine Krankheit gefunden</div>'; dropdown.classList.add('open'); return; }
+  dropdown.innerHTML = matches.map(idx => `<div class="dropdown-item" data-idx="${idx}">${highlight(DATA.diseases[idx], q)}</div>`).join('');
+  dropdown.classList.add('open');
+  dropdown.querySelectorAll('.dropdown-item').forEach(it => it.addEventListener('click', function() { selectDisease(+this.dataset.idx); }));
+}
+function highlight(t, q) { const i = t.toLowerCase().indexOf(q); return i < 0 ? t : t.slice(0,i)+'<mark>'+t.slice(i,i+q.length)+'</mark>'+t.slice(i+q.length); }
+function updateActive(items) { items.forEach((it,i) => it.classList.toggle('active', i===activeDropdownIdx)); if (items[activeDropdownIdx]) items[activeDropdownIdx].scrollIntoView({block:'nearest'}); }
+function closeDropdown() { dropdown.classList.remove('open'); dropdown.innerHTML=''; activeDropdownIdx=-1; }
+
+function selectDisease(idx) {
+  if (selectedDiseases.length >= 3 || selectedDiseases.includes(idx)) return;
+  selectedDiseases.push(idx); searchInput.value=''; closeDropdown(); selectedProducts.clear(); renderPills(); renderResults();
+  if (selectedDiseases.length < 3) searchInput.focus();
+}
+function removeDisease(idx) { selectedDiseases = selectedDiseases.filter(d => d !== idx); selectedProducts.clear(); renderPills(); renderResults(); }
+function renderPills() {
+  selectedContainer.innerHTML = selectedDiseases.map((idx,i) => `<div class="disease-pill"><span class="pill-num">${i+1}</span><span>${DATA.diseases[idx]}</span><button class="pill-remove" onclick="removeDisease(${idx})" aria-label="Entfernen">&times;</button></div>`).join('');
+  maxHint.textContent = selectedDiseases.length >= 3 ? 'Maximal 3 Diagnosen erreicht.' : selectedDiseases.length > 0 ? `${3-selectedDiseases.length} weitere Diagnose${selectedDiseases.length<2?'n':''} möglich` : '';
+  searchInput.disabled = selectedDiseases.length >= 3;
+  searchInput.placeholder = selectedDiseases.length >= 3 ? 'Maximum erreicht – entferne eine Diagnose' : 'Krankheit eingeben, z. B. Hufrehe, Cushing, Kotwasser …';
+}
+
+function toggleProduct(pIdx) {
+  if (selectedProducts.has(pIdx)) selectedProducts.delete(pIdx); else selectedProducts.add(pIdx);
+  const card = document.querySelector(`[data-pidx="${pIdx}"]`);
+  if (card) card.classList.toggle('selected', selectedProducts.has(pIdx));
+  const cb = document.querySelector(`[data-pidx="${pIdx}"] .product-cb`);
+  if (cb) cb.checked = selectedProducts.has(pIdx);
+  updateCopyBtn();
+}
+function updateCopyBtn() {
+  const btn = document.getElementById('copyBtn');
+  const fpBtn = document.getElementById('futterplanBtn');
+  const dis = selectedProducts.size === 0;
+  if (btn) btn.disabled = dis;
+  if (fpBtn) fpBtn.disabled = dis;
+}
+
+function renderResults() {
+  if (!selectedDiseases.length) {
+    resultsArea.innerHTML = `<div class="results-empty"><div class="results-empty-icon">&#x1F50D;</div><h3>Noch keine Diagnose gewählt</h3><p>Gib oben eine Krankheit ein, um die passenden OKAPI-Produkte zu sehen.</p></div>`;
+    controlsArea.classList.remove('visible'); return;
+  }
+  controlsArea.classList.add('visible');
+  const showJung = filterJung.checked, showSenior = filterSenior.checked, showTragend = filterTragend.checked;
+
+  const productResults = [];
+  DATA.products.forEach((prod, pIdx) => {
+    // Filter special products by radio selection (but NOT by hideSpecial toggle — that only collapses)
+    if (prod.special) {
+      if (prod.special === 'gelb' && !showJung && !showSenior) return;
+      if (prod.special === 'gelb') {
+        const isJunior = prod.name.toLowerCase().includes('junior');
+        const isSenior = prod.name.toLowerCase().includes('senior');
+        if (isJunior && !showJung) return;
+        if (isSenior && !showSenior) return;
+      }
+      if (prod.special === 'orange' && !showTragend) return;
+      if (prod.special === 'lila' && !showJung && !showSenior && !showTragend) {
+        // lila (mineral) products: show only when they have disease entries
+      }
+    }
+
+    const diseaseEntries = [];
+    let bestRating = Infinity, hasX = false;
+    selectedDiseases.forEach(dIdx => {
+      const val = prod.m[dIdx];
+      if (val !== undefined) {
+        if (val === "x") { hasX = true; diseaseEntries.push({dIdx, rating:"x"}); }
+        else { const n = +val; if (!isNaN(n)) { if (n < bestRating) bestRating = n; diseaseEntries.push({dIdx, rating:n}); } }
+      }
+    });
+    if (diseaseEntries.length === 0 && prod.special) {
+      productResults.push({prod, pIdx, diseaseEntries:[], bestRating:99, hasX:false, specialOnly:true});
+    } else if (diseaseEntries.length > 0) {
+      productResults.push({prod, pIdx, diseaseEntries, bestRating: bestRating===Infinity?99:bestRating, hasX, specialOnly:false});
+    }
+  });
+
+  const groups = {1:[],2:[],3:[],4:[],x:[],special:[]};
+  productResults.forEach(r => {
+    if (r.specialOnly) groups.special.push(r);
+    else if (r.hasX && r.bestRating === Infinity) groups.x.push(r);
+    else if (r.hasX) { (groups[r.bestRating]||groups[4]).push(r); }
+    else if (groups[r.bestRating]) groups[r.bestRating].push(r);
+  });
+
+  const diseaseNames = selectedDiseases.map(i => DATA.diseases[i]).join(' + ');
+  let html = `<div class="results-toolbar">
+    <h2>Produktempfehlungen für Diagnose:<br/><em>${diseaseNames}</em></h2>
+    <div class="toolbar-col">
+      <div class="desc-toggle-row">
+        <label class="toggle-switch"><input type="checkbox" id="showDesc" ${showDescState?'checked':''} onchange="showDescState=this.checked;renderResults()" /><span class="toggle-slider"></span></label>
+        <span class="toggle-label">Kurzbeschreibung</span>
+        <span class="toggle-divider"></span>
+        <label class="toggle-switch"><input type="checkbox" id="showIngr" ${showIngrState?'checked':''} onchange="showIngrState=this.checked;renderResults()" /><span class="toggle-slider"></span></label>
+        <span class="toggle-label">Inhaltsstoffe</span>
+      </div>
+      <div class="toolbar-actions">
+        <button class="toolbar-btn" id="futterplanBtn" disabled onclick="sendToFutterplan()">In Futterplan<br/>übernehmen</button>
+        <button class="toolbar-btn" id="copyBtn" disabled onclick="copyResults()">Auswahl in<br/>Zwischenablage kopieren</button>
+        <button class="toolbar-btn secondary" onclick="window.print()">Drucken</button>
+      </div>
+      <div class="copy-hint">Wähle Produkte per Checkbox aus, um sie in den Futterplan zu übernehmen<br/>oder in die Zwischenablage zu kopieren.</div>
+    </div>
+  </div>`;
+
+  const catOrder = [1,2,3,4,"x"];
+
+  catOrder.forEach(cat => {
+    const items = groups[cat] || [];
+    if (!items.length) return;
+    
+    html += `<div class="category-group cat-${cat}" data-cat="${cat}"><div class="category-header"><div class="category-dot"></div><div class="category-title">${CAT_LABELS[cat]}</div><div class="category-count">${items.length} Produkt${items.length!==1?'e':''}</div><button class="category-toggle" onclick="toggleCategory(this)" aria-label="Ein-/Ausklappen"><span class="chevron">▼</span></button></div><div class="product-list">`;
+    items.sort((a,b) => a.prod.name.localeCompare(b.prod.name));
+    items.forEach(r => { html += renderCard(r, cat); });
+    html += '</div></div>';
+  });
+
+  if (groups.special.length) {
+    
+    html += `<div class="category-group" data-cat="special"><div class="category-header"><div class="category-dot" style="background:var(--okapi-text-light)"></div><div class="category-title" style="color:var(--okapi-text-mid)">Mineralfutter</div><div class="category-count">${groups.special.length}</div><button class="category-toggle" onclick="toggleCategory(this)" aria-label="Ein-/Ausklappen"><span class="chevron">▼</span></button></div><div class="product-list">`;
+    groups.special.forEach(r => { html += renderCard(r, 'special'); });
+    html += '</div></div>';
+  }
+  resultsArea.innerHTML = html;
+  updateCopyBtn();
+}
+
+function renderCard(r, cat) {
+  const p = r.prod, sym = cat==="x"?"✕":cat==="special"?"★":cat;
+  const checked = selectedProducts.has(r.pIdx) ? 'checked' : '';
+  const selClass = selectedProducts.has(r.pIdx) ? ' selected' : '';
+  const weight = parseInt(horseWeight.value) || 600;
+  const dose = calcDose(p.name, weight);
+  let h = `<div class="product-card${selClass}" data-pidx="${r.pIdx}">
+    <input type="checkbox" class="product-cb" ${checked} onchange="toggleProduct(${r.pIdx})" />
+    <div class="product-icon">${sym}</div>
+    <div class="product-main"><div class="product-info">
+      <div class="product-name">${p.name}<span class="product-type-badge product-type-${p.type}">${p.type==='F'?'GF':p.type==='P'?'GP':'MI'}</span></div>`;
+  if (r.diseaseEntries.length) {
+    h += '<div class="product-diseases">';
+    const sorted = [...r.diseaseEntries].sort((a,b) => {
+      const ra = a.rating === "x" ? 99 : a.rating;
+      const rb = b.rating === "x" ? 99 : b.rating;
+      return ra - rb;
+    });
+    sorted.forEach(de => {
+      const rc = de.rating==="x"?"x":de.rating;
+      const label = de.rating==="x"?"nicht geeignet":`Kat. ${de.rating}`;
+      h += `<span class="product-disease-tag" style="background:var(--cat-${rc}-bg);color:var(--cat-${rc});">${DATA.diseases[de.dIdx]} (${label})</span>`;
+    });
+    h += '</div>';
+  }
+  if (dose) {
+    h += `<div class="product-dose">Tagesdosis (${weight} kg): ${dose.text}</div>`;
+  }
+  if (p.special) h += `<div class="product-special-tags"><span class="special-tag ${p.special}">${SPECIAL_LABELS[p.special]}</span></div>`;
+  h += '</div>';
+  if ((p.desc && showDescState) || (p.ingr && showIngrState)) {
+    let descHtml = '';
+    if (p.desc && showDescState) descHtml += `<div class="product-desc-text">${p.desc}</div>`;
+    if (p.ingr && showIngrState) descHtml += `<div class="product-ingr-text">Inhaltsstoffe: ${p.ingr}</div>`;
+    h += `<div class="product-desc">${descHtml}</div>`;
+  }
+  h += '</div></div>';
+  return h;
+}
+
+const filterNone = $('filterNone');
+
+function toggleCategory(btn) {
+  const group = btn.closest('.category-group');
+  if (group) group.classList.toggle('collapsed');
+}
+
+[filterJung, filterSenior, filterTragend, filterNone].forEach(el => el.addEventListener('change', renderResults));
+horseWeight.addEventListener('input', renderResults);
+
+function sendToFutterplan() {
+  if (!selectedProducts.size) return;
+  const fpWeight = parseInt(horseWeight.value) || 600;
+  const payload = {
+    diseases: selectedDiseases.map(i => DATA.diseases[i]),
+    horseWeightKg: fpWeight,
+    products: [...selectedProducts].map(pIdx => {
+      const p = DATA.products[pIdx];
+      const ratings = {};
+      selectedDiseases.forEach(dIdx => { const v = p.m[dIdx]; if (v !== undefined) ratings[DATA.diseases[dIdx]] = v; });
+      const dose = calcDose(p.name, fpWeight);
+      return { name: p.name, type: p.type, ratings, description: p.desc || '', dose: dose ? dose.text : null };
+    })
+  };
+  // Integration hook: dispatch custom event for Sanoanimal Praxis-Software
+  const event = new CustomEvent('okapi-futterplan-transfer', { detail: payload, bubbles: true });
+  document.dispatchEvent(event);
+  // Also store in window for direct access
+  window.__okapiFutterplanSelection = payload;
+  showToast(`${selectedProducts.size} Produkt${selectedProducts.size > 1 ? 'e' : ''} an Futterplan übergeben!`);
+  console.log('[OKAPI Navigator] Futterplan payload:', payload);
+}
+
+function copyResults() {
+  if (!selectedProducts.size) return;
+  const diseaseNames = selectedDiseases.map(i => DATA.diseases[i]);
+  const weight = parseInt(horseWeight.value) || 600;
+  let text = `OKAPI Produktempfehlung\nDiagnosen: ${diseaseNames.join(', ')}\nPferdegewicht: ${weight} kg\n${'='.repeat(50)}\n\n`;
+  selectedProducts.forEach(pIdx => {
+    const p = DATA.products[pIdx];
+    const entries = [];
+    selectedDiseases.forEach(dIdx => {
+      const val = p.m[dIdx];
+      if (val !== undefined) {
+        const label = val==="x"?"nicht geeignet":["","optimal","empfohlen","optional","Basis"][val]||val;
+        entries.push(`${DATA.diseases[dIdx]}: ${label}`);
+      }
+    });
+    text += `• ${p.name} (${TYPE_LABELS[p.type]})\n`;
+    if (entries.length) text += `  ${entries.join(', ')}\n`;
+    const dose = calcDose(p.name, weight);
+    if (dose) text += `  Tagesdosis (${weight} kg): ${dose.text}\n`;
+    if (p.desc) text += `  ${p.desc}\n`;
+    text += '\n';
+  });
+  text += `Hinweis: Alle Empfehlungen dienen der allgemeinen Orientierung und ersetzen keine tierärztliche Beratung.\n`;
+  navigator.clipboard.writeText(text).then(() => showToast('Auswahl in die Zwischenablage kopiert!')).catch(() => {
+    const ta = document.createElement('textarea'); ta.value=text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+    showToast('Auswahl in die Zwischenablage kopiert!');
+  });
+}
+function showToast(msg) { toast.textContent=msg; toast.classList.add('show'); setTimeout(() => toast.classList.remove('show'), 2400); }
+</script>
+</body>
+</html>

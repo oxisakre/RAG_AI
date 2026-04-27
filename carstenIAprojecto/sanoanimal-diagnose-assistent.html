@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Sanoanimal Diagnose-Assistent</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --green: #1B6B4A;
+  --green-light: #ECFDF5;
+  --green-dark: #0F4D33;
+  --sand: #F5F0E4;
+  --sand-dark: #E8DFD0;
+  --text: #1F2937;
+  --text-light: #6B7280;
+  --text-muted: #9CA3AF;
+  --border: #D1D5DB;
+  --bg: #FAFAF8;
+  --white: #FFFFFF;
+  --red: #DC2626;
+  --amber: #F59E0B;
+  --amber-bg: #FFF7ED;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'DM Sans', -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+h1, h2, h3 { font-family: 'Source Serif 4', Georgia, serif; }
+
+/* === LAYOUT === */
+.app {
+  max-width: 800px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+/* === HEADER === */
+.header {
+  padding: 20px 16px 14px;
+  border-bottom: 2px solid var(--green);
+  background: var(--white);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.header-row { display: flex; align-items: center; gap: 10px; }
+.logo {
+  width: 34px; height: 34px; border-radius: 8px;
+  background: linear-gradient(135deg, var(--green), #2D8B6A);
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-weight: 700; font-size: 17px; flex-shrink: 0;
+}
+.header h1 { font-size: 19px; font-weight: 700; color: var(--green); }
+.header-sub { font-size: 12px; color: var(--text-light); margin-top: 4px; }
+
+/* === TABS === */
+.tabs {
+  display: flex; background: var(--white);
+  border-bottom: 1px solid var(--border);
+  position: sticky; top: 72px; z-index: 99;
+}
+.tab {
+  flex: 1; padding: 10px 0; text-align: center;
+  font-size: 13px; font-weight: 600; cursor: pointer;
+  border: none; background: none; color: var(--text-light);
+  border-bottom: 2px solid transparent;
+  transition: all 0.15s;
+}
+.tab.active { color: var(--green); border-bottom-color: var(--green); }
+.tab .badge {
+  display: inline-block; min-width: 18px; padding: 0 5px; height: 18px;
+  border-radius: 9px; background: var(--green); color: white;
+  font-size: 10px; line-height: 18px; margin-left: 4px;
+}
+
+/* === CHAT VIEW === */
+.chat-container {
+  flex: 1; display: flex; flex-direction: column;
+  overflow: hidden;
+}
+.chat-messages {
+  flex: 1; overflow-y: auto; padding: 16px;
+  display: flex; flex-direction: column; gap: 12px;
+}
+.msg {
+  max-width: 88%; padding: 12px 16px; border-radius: 16px;
+  font-size: 14px; line-height: 1.5; word-wrap: break-word;
+  animation: fadeIn 0.2s ease;
+}
+@keyframes fadeIn { from { opacity:0; transform:translateY(4px) } to { opacity:1; transform:none } }
+.msg.assistant {
+  align-self: flex-start; background: var(--white);
+  border: 1px solid var(--border); border-bottom-left-radius: 4px;
+}
+.msg.user {
+  align-self: flex-end; background: var(--green);
+  color: white; border-bottom-right-radius: 4px;
+}
+.msg.system {
+  align-self: center; background: var(--sand);
+  border: 1px solid var(--sand-dark); font-size: 12px;
+  color: var(--text-light); text-align: center; max-width: 95%;
+  border-radius: 10px;
+}
+.msg.alert {
+  align-self: stretch; background: #FEF2F2;
+  border: 2px solid var(--red); font-weight: 500;
+  color: #991B1B; max-width: 100%; text-align: center;
+}
+.msg-content { white-space: pre-wrap; }
+.msg-content strong { font-weight: 700; }
+.typing {
+  align-self: flex-start; padding: 12px 20px;
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: 16px; border-bottom-left-radius: 4px;
+  color: var(--text-muted); font-size: 13px;
+}
+.typing::after {
+  content: '...'; animation: dots 1.2s infinite;
+}
+@keyframes dots {
+  0%,20% { content: '.' } 40% { content: '..' } 60%,100% { content: '...' }
+}
+
+/* === CHAT INPUT === */
+.chat-input-area {
+  padding: 10px 16px 16px;
+  background: var(--white);
+  border-top: 1px solid var(--border);
+}
+.chat-input-row {
+  display: flex; gap: 8px; align-items: flex-end;
+}
+.chat-input {
+  flex: 1; padding: 10px 14px; border-radius: 20px;
+  border: 1.5px solid var(--border); font-size: 14px;
+  font-family: 'DM Sans', sans-serif; resize: none;
+  min-height: 42px; max-height: 120px; line-height: 1.4;
+  background: var(--bg);
+  transition: border-color 0.15s;
+}
+.chat-input:focus { outline: none; border-color: var(--green); }
+.chat-input::placeholder { color: var(--text-muted); }
+.send-btn {
+  width: 42px; height: 42px; border-radius: 50%;
+  border: none; background: var(--green); color: white;
+  font-size: 18px; cursor: pointer; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s;
+}
+.send-btn:hover { background: var(--green-dark); }
+.send-btn:disabled { background: var(--border); cursor: default; }
+.selected-symptoms-bar {
+  margin-bottom: 8px; display: flex; gap: 4px; flex-wrap: wrap;
+}
+.selected-tag {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 8px; border-radius: 12px; font-size: 11px;
+  background: var(--green-light); color: var(--green);
+  border: 1px solid #1B6B4A33;
+}
+.selected-tag button {
+  background: none; border: none; color: var(--green);
+  cursor: pointer; font-size: 13px; line-height: 1; padding: 0;
+}
+
+/* === SYMPTOM PICKER VIEW === */
+.picker-container {
+  flex: 1; overflow-y: auto; padding: 16px;
+}
+.search-box {
+  width: 100%; padding: 10px 14px; border-radius: 10px;
+  border: 1.5px solid var(--border); font-size: 14px;
+  background: var(--white); margin-bottom: 12px;
+  font-family: 'DM Sans', sans-serif;
+}
+.search-box:focus { outline: none; border-color: var(--green); }
+.cat-filter {
+  display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px;
+}
+.cat-btn {
+  padding: 4px 10px; border-radius: 14px;
+  border: 1px solid var(--border); background: var(--white);
+  font-size: 11px; cursor: pointer; color: var(--text-light);
+  transition: all 0.1s;
+}
+.cat-btn.active { border-color: var(--green); background: var(--green-light); color: var(--green); font-weight: 600; }
+.cat-btn .cnt { color: var(--text-muted); }
+
+.sym-list { display: flex; flex-direction: column; gap: 5px; }
+.sym-card {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 10px 12px; border-radius: 10px;
+  border: 1px solid var(--border); background: var(--white);
+  cursor: pointer; transition: all 0.1s;
+  text-align: left; width: 100%;
+  font-family: 'DM Sans', sans-serif; font-size: 13px;
+}
+.sym-card:hover { border-color: #1B6B4A88; }
+.sym-card.selected { border-color: var(--green); background: var(--green-light); border-width: 1.5px; }
+.sym-check {
+  width: 20px; height: 20px; border-radius: 5px;
+  border: 1.5px solid var(--border); flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; color: var(--green); margin-top: 1px;
+  transition: all 0.1s;
+}
+.sym-card.selected .sym-check { border-color: var(--green); background: var(--green); color: white; }
+.sym-info { flex: 1; }
+.sym-name { font-weight: 600; color: var(--text); }
+.sym-meta { display: flex; gap: 6px; margin-top: 3px; flex-wrap: wrap; }
+.sym-badge {
+  display: inline-block; padding: 1px 6px; border-radius: 8px;
+  font-size: 10px; font-weight: 600;
+}
+.badge-fm { background: #FEF3C7; color: #92400E; border: 1px solid #F59E0B; }
+.badge-erk { background: #FEE2E2; color: #991B1B; border: 1px solid #EF4444; }
+.badge-akut { background: #FF0000; color: #FFF; border: 1px solid #CC0000; animation: pulse 1.5s infinite; }
+@keyframes pulse { 0%,100% { opacity:1 } 50% { opacity:0.7 } }
+.badge-organ {
+  padding: 1px 6px; border-radius: 8px; font-size: 10px;
+  font-weight: 500; background: #f0f0f0; color: #555;
+}
+.sym-note { font-size: 11px; color: var(--text-muted); margin-top: 2px; line-height: 1.3; }
+
+/* === ANALYZE BUTTON (fixed bottom on picker) === */
+.analyze-bar {
+  padding: 10px 16px 16px;
+  background: var(--white);
+  border-top: 1px solid var(--border);
+  display: flex; justify-content: space-between; align-items: center;
+}
+.analyze-bar span { font-size: 13px; color: var(--text-light); }
+.analyze-btn {
+  padding: 8px 20px; border-radius: 10px;
+  border: none; background: var(--green); color: white;
+  font-size: 13px; font-weight: 600; cursor: pointer;
+}
+.analyze-btn:hover { background: var(--green-dark); }
+.reset-btn {
+  padding: 8px 14px; border-radius: 10px;
+  border: 1px solid var(--border); background: var(--white);
+  font-size: 12px; color: var(--text-light); cursor: pointer;
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 500px) {
+  .header h1 { font-size: 17px; }
+  .msg { max-width: 92%; font-size: 13.5px; }
+}
+</style>
+</head>
+<body>
+
+<div class="app" id="app">
+  <!-- Header -->
+  <div class="header">
+    <div class="header-row">
+      <div class="logo">S</div>
+      <div>
+        <h1>Sanoanimal Diagnose-Assistent</h1>
+        <div class="header-sub">Symptom - Organsystem - Differentialdiagnose · Dr. Christina Fritz</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab active" id="tabChat" onclick="switchTab('chat')">
+       Chat-Diagnose
+    </button>
+    <button class="tab" id="tabPicker" onclick="switchTab('picker')">
+       Symptom-Picker <span class="badge" id="pickerBadge" style="display:none">0</span>
+    </button>
+  </div>
+
+  <!-- Chat View -->
+  <div class="chat-container" id="chatView">
+    <div class="chat-messages" id="chatMessages">
+      <div class="msg system">
+        Willkommen! Beschreibe deine Beobachtungen am Pferd – ich helfe dir bei der Diagnose.<br>
+        Du kannst auch im Tab <b>Symptom-Picker</b> gezielt Symptome auswählen.
+      </div>
+    </div>
+    <div class="chat-input-area">
+      <div class="selected-symptoms-bar" id="selectedBar"></div>
+      <div class="chat-input-row">
+        <textarea class="chat-input" id="chatInput" rows="1"
+          placeholder="Beobachtungen beschreiben..."
+          onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage()}"></textarea>
+        <button class="send-btn" id="sendBtn" onclick="sendMessage()" aria-label="Senden"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Symptom Picker View -->
+  <div class="picker-container" id="pickerView" style="display:none">
+    <input type="text" class="search-box" id="searchBox" placeholder="Symptom suchen..." oninput="renderSymptoms()">
+    <div class="cat-filter" id="catFilter"></div>
+    <div class="sym-list" id="symList"></div>
+  </div>
+  <div class="analyze-bar" id="analyzeBar" style="display:none">
+    <div>
+      <span id="selectedCount">0</span> Symptome ausgewählt
+      <button class="reset-btn" onclick="clearSelection()" style="margin-left:8px">Zurücksetzen</button>
+    </div>
+    <button class="analyze-btn" onclick="analyzeSelection()">Analyse starten</button>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// SYMPTOM DATABASE
+// ============================================================
+const SYMPTOMS = {
+  "Stichelhaare": { organ: "Leber", diseases: ["Leberüberlastung", "KPU"], type: "Frühmarker", note: "Ausnahme: Stirn bei alten Pferden, Roan, Schimmel", cat: "Fell & Haut" },
+  "Hungerhaare": { organ: "Leber", diseases: ["Leberüberlastung", "KPU"], type: "Frühmarker", note: "Einzelne lange Haare an Bauch/Flanke/Ellbogen, fallen als letzte im Fellwechsel", cat: "Fell & Haut" },
+  "Rappen werden rötlich/braun": { organ: "Leber", diseases: ["Leberüberlastung"], type: "Frühmarker", cat: "Fell & Haut" },
+  "Königstaler / Hafertaler": { organ: "Leber", diseases: ["Leberüberlastung"], type: "Frühmarker", note: "Dunkle Fellflecke bei Füchsen/Isabellen", cat: "Fell & Haut" },
+  "Senkrechte Streifen am Rumpf": { organ: "Leber", diseases: ["Leberüberlastung"], type: "Frühmarker", cat: "Fell & Haut" },
+  "Stumpfes Fell": { organ: "Niere", diseases: ["Subklinische Niereninsuffizienz", "Leberüberlastung"], type: "Frühmarker", note: "Insbesondere wenn Haar am Ende Häkchen bildet", cat: "Fell & Haut" },
+  "Fellwechselprobleme": { organ: "Niere", diseases: ["Subklinische Niereninsuffizienz", "Cushing", "KPU"], type: "Frühmarker", cat: "Fell & Haut" },
+  "Dünnes Winterfell / dünnes Langhaar": { organ: "Niere", diseases: ["Subklinische Niereninsuffizienz", "Colitis - Schwefelmangel"], type: "Frühmarker", cat: "Fell & Haut" },
+  "Sommerekzem": { organ: "Immunsystem", diseases: ["Leaky Gut", "Subklinische Niereninsuffizienz", "KPU"], type: "Erkrankung", note: "Allergie auf Insektenspeichel bei Leaky Gut", cat: "Fell & Haut" },
+  "Ekzeme (Mähne/Schweif/Rücken/Bauchnaht)": { organ: "Leber", diseases: ["KPU", "Biotransformationsstörung", "Leaky Gut"], type: "Erkrankung", note: "Toxinausscheidung über Talgdrüsen", cat: "Fell & Haut" },
+  "Ekzeme (Kopf/Hals/Brust/Flanken)": { organ: "Niere", diseases: ["Niereninsuffizienz"], type: "Erkrankung", note: "Toxinausscheidung über Schweißdrüsen", cat: "Fell & Haut" },
+  "Mauke / Raspe": { organ: "Niere", diseases: ["Subklinische Niereninsuffizienz", "KPU", "Leberüberlastung"], type: "Frühmarker", cat: "Fell & Haut" },
+  "Nesselfieber": { organ: "Niere", diseases: ["Subklinische Niereninsuffizienz", "KPU", "Allergie"], type: "Frühmarker", cat: "Fell & Haut" },
+  "Warzen / Sarkoide": { organ: "Immunsystem", diseases: ["Subklinische Niereninsuffizienz", "Immunschwäche"], type: "Frühmarker", cat: "Fell & Haut" },
+  "Juckreiz (generell)": { organ: "Niere", diseases: ["Subklinische Niereninsuffizienz", "Leberüberlastung"], type: "Frühmarker", cat: "Fell & Haut" },
+  "Hautpilz / Haarlinge / Milben": { organ: "Immunsystem", diseases: ["Subklinische Niereninsuffizienz", "Dysbiose"], type: "Erkrankung", cat: "Fell & Haut" },
+  "Hufrehe": { organ: "Stoffwechsel", diseases: ["Dickdarm-Azidose", "EMS", "Pseudo-EMS", "Insulinresistenz", "Cushing", "KPU", "Subklinische Niereninsuffizienz"], type: "Erkrankung", note: "DD: metabolisch vs. fütterungsbedingt vs. Belastung vs. Medikamente vs. KPU", cat: "Hufe" },
+  "Hufabszesse (wiederkehrend)": { organ: "Niere", diseases: ["Subklinische Niereninsuffizienz"], type: "Frühmarker", cat: "Hufe" },
+  "Strahlfäule": { organ: "Niere", diseases: ["Subklinische Niereninsuffizienz", "Immunschwäche"], type: "Frühmarker", cat: "Hufe" },
+  "White Line Disease": { organ: "Niere", diseases: ["Subklinische Niereninsuffizienz", "Immunschwäche"], type: "Frühmarker", cat: "Hufe" },
+  "Schlechte Hufhornqualität": { organ: "Niere", diseases: ["Subklinische Niereninsuffizienz", "Schwefelmangel", "Zinkmangel (KPU)"], type: "Frühmarker", cat: "Hufe" },
+  "Kotwasser": { organ: "Darm", diseases: ["Leaky Gut", "EGUS", "Dysbiose", "Stress", "Zahnprobleme", "Herzinsuffizienz"], type: "Erkrankung", note: "Geformter Kot + freies Wasser. Darmsanierung ohne Effekt  -  Magengeschwür!", cat: "Verdauung" },
+  "Durchfall (chronisch)": { organ: "Darm", diseases: ["Colitis/Leaky Gut", "Dysbiose", "Malabsorption", "Futtermittelallergie", "Ileozäkalklappe-Insuffizienz"], type: "Erkrankung", cat: "Verdauung" },
+  "Kolik (wiederkehrend)": { organ: "Darm", diseases: ["Colitis/Leaky Gut", "Dysbiose", "Magenentleerungsstörung", "Enterolithen", "Sand", "Herzinsuffizienz", "KPU"], type: "Erkrankung", cat: "Verdauung" },
+  "Kolik bei/nach Arbeit": { organ: "Muskel", diseases: ["PSSM"], type: "Erkrankung", note: "Belastungsinduziert – PSSM ausschließen!", cat: "Verdauung" },
+  "Kolik bei Wetterwechsel": { organ: "Herz", diseases: ["Kreislauf-Kolik (Herzinsuffizienz)"], type: "Erkrankung", note: "V.a. alte Pferde, schwüle Wetterlagen", cat: "Verdauung" },
+  "Blähungen / häufiges Pupsen": { organ: "Darm", diseases: ["Dysbiose", "Bierhefe", "Pilze (Candida)", "Pektin-Überversorgung"], type: "Erkrankung", note: "ACHTUNG: Dicker Bauch ≠ Übergewicht! Reduktionsdiät verschlimmert!", cat: "Verdauung" },
+  "Saurer Kotgeruch": { organ: "Darm", diseases: ["Dysbiose", "Fehlgärung", "Milchsäurebakterien"], type: "Frühmarker", cat: "Verdauung" },
+  "Ammoniakgeruch Kot/Stall": { organ: "Darm", diseases: ["Protein-Dysbiose", "Omeprazol-Nebenwirkung"], type: "Erkrankung", cat: "Verdauung" },
+  "Kotfressen (erwachsen)": { organ: "Darm", diseases: ["Gestörte Erstbesiedelung", "Dysbiose"], type: "Erkrankung", note: "Hinweis auf gestörte Erstbesiedelung in ersten Lebensmonaten", cat: "Verdauung" },
+  "Rülpsgeräusche (ohne Koppen)": { organ: "Magen", diseases: ["Magen-Dysbiose", "Magenaufgasung", "Magenentleerungsstörung"], type: "Erkrankung", note: "Hefen im Futter? Lösliche KH?", cat: "Verdauung" },
+  "Abmagerung trotz Fütterung": { organ: "Darm", diseases: ["EGUS", "Malabsorption", "Dysbiose", "Zahnprobleme", "Ileozäkalklappe", "Wurmbefall"], type: "Erkrankung", cat: "Verdauung" },
+  "Schmerzgesicht": { organ: "Magen", diseases: ["EGUS (Magengeschwüre)"], type: "Erkrankung", note: "Angespannte Augen/Kaumuskulatur, erweiterte Nüstern, Ohren steif hinten", cat: "Magen" },
+  "Futtermäkelei / Futterverweigerung": { organ: "Magen", diseases: ["EGUS", "Zahnprobleme", "Magenentleerungsstörung"], type: "Erkrankung", note: "Bei alten Pferden: immer Zähne prüfen!", cat: "Magen" },
+  "Flehmen beim Fressen": { organ: "Magen", diseases: ["EGUS", "Leberüberlastung"], type: "Erkrankung", cat: "Magen" },
+  "Gurtenzwang / Sattelzwang": { organ: "Magen", diseases: ["EGUS"], type: "Erkrankung", cat: "Magen" },
+  "Koppen": { organ: "Magen", diseases: ["EGUS"], type: "Erkrankung", cat: "Magen" },
+  "Kitzelig am Bauch": { organ: "Magen", diseases: ["EGUS"], type: "Erkrankung", cat: "Magen" },
+  "Klemmiges Laufen (Reitbeginn)": { organ: "Magen", diseases: ["EGUS"], type: "Erkrankung", cat: "Magen" },
+  "Einseitiges Kauen": { organ: "Zähne", diseases: ["Zahnhaken", "Zahngrate", "Zahnfraktur", "EOTRH", "Karies"], type: "Erkrankung", note: "87% Zahnprobleme betreffen Backenzähne – von außen nicht sichtbar!", cat: "Zähne & Maul" },
+  "Übler Maulgeruch": { organ: "Zähne", diseases: ["Zahnfraktur", "Diastase", "Parodontitis"], type: "Erkrankung", cat: "Zähne & Maul" },
+  "Futter fällt aus dem Maul": { organ: "Zähne", diseases: ["Zahnprobleme", "EOTRH"], type: "Erkrankung", cat: "Zähne & Maul" },
+  "Sehnenprobleme (nicht unfallbedingt)": { organ: "Leber", diseases: ["Leberüberlastung", "KPU"], type: "Frühmarker", cat: "Bewegungsapparat" },
+  "Gallen an Fesseln / Sprunggelenken": { organ: "Leber", diseases: ["Leberüberlastung", "KPU"], type: "Frühmarker", cat: "Bewegungsapparat" },
+  "Angelaufene Beine": { organ: "Niere", diseases: ["Subklinische Niereninsuffizienz", "Leberüberlastung", "Insulinresistenz", "Pseudo-EMS", "Toxin-Einlagerung"], type: "Frühmarker", cat: "Bewegungsapparat" },
+  "Muskelsteifheit / harte Muskeln": { organ: "Muskel", diseases: ["PSSM"], type: "Erkrankung", note: "Belastungsinduziert, während/nach Arbeit", cat: "Bewegungsapparat" },
+  "Kreuzverschlag": { organ: "Muskel", diseases: ["PSSM", "Equine Rhabdomyelose"], type: "Erkrankung", note: "V.a. Quarter Horses (7x Risiko)", cat: "Bewegungsapparat" },
+  "Verlängerte Lösephase / fester Rücken": { organ: "Leber", diseases: ["KPU", "Verdauungsstörung - Bewegungsapparat", "Biotransformationsstörung"], type: "Erkrankung", cat: "Bewegungsapparat" },
+  "Äppel zu klein für Pferdegröße": { organ: "Bewegungsapparat", diseases: ["LWS-/Beckenblockade"], type: "Erkrankung", note: "Verdauungsapparat hängt am Bewegungsapparat", cat: "Bewegungsapparat" },
+  "Sägebockartiges Stehen": { organ: "Stoffwechsel", diseases: ["Hufrehe", "PSSM"], type: "Erkrankung", note: "DD: Hufrehe (Hufschmerz) vs. PSSM (Muskelschmerz nach Belastung)", cat: "Bewegungsapparat" },
+  "Schreckhaftigkeit": { organ: "Leber", diseases: ["Leberüberlastung", "Fehlsichtigkeit (Leber)"], type: "Frühmarker", cat: "Verhalten" },
+  "Lethargie / häufiges Gähnen": { organ: "Leber", diseases: ["Leberüberlastung"], type: "Frühmarker", note: "DD: Magengeschwüre!", cat: "Verhalten" },
+  "Narkolepsie (Zusammenbrechen)": { organ: "Haltung", diseases: ["Schlafmangel"], type: "Erkrankung", note: "1,5-2h Tiefschlaf/24h nötig. Wunden an Karpalgelenken = Schlafmangel. KEINE Therapie wirkt ohne Schlaf!", cat: "Verhalten" },
+  "Übergewicht nimmt nicht ab trotz Diät": { organ: "Stoffwechsel", diseases: ["Pseudo-EMS (Lymphe)", "Insulinresistenz", "EMS+Pseudo-EMS Mischform"], type: "Erkrankung", note: "Pseudo-EMS: Diät WIRKUNGSLOS! 24/7 Heu + Darmsanierung nötig.", cat: "Gewicht" },
+  "Halskamm dick, geschwollen, hart": { organ: "Stoffwechsel", diseases: ["Pseudo-EMS", "Insulinresistenz", "Toxin-Einlagerung"], type: "Erkrankung", cat: "Gewicht" },
+  "Halskamm dick + heiß (akut)": { organ: "Stoffwechsel", diseases: ["Pseudo-EMS  -  Hufrehe IMMINENT"], type: "AKUT", note: "ACHTUNG: SOFORT handeln! Baswickel Hals+Hufe!", cat: "Gewicht" },
+  "Extreme Fresslust / Zuckersucht": { organ: "Pankreas", diseases: ["EMS", "Insulinresistenz"], type: "Erkrankung", cat: "Gewicht" },
+  "Fettpolster Halskamm/Kruppe": { organ: "Stoffwechsel", diseases: ["EMS"], type: "Erkrankung", note: "Anfangsstadium: sieht stark bemuskelt aus (Fett täuscht Muskeln vor)", cat: "Gewicht" },
+  "Leistungsmangel trotz Fütterung": { organ: "Stoffwechsel", diseases: ["Insulinresistenz", "PSSM", "EMS", "Cushing", "B12-Mangel"], type: "Erkrankung", cat: "Gewicht" },
+  "Kein Konditionsaufbau trotz Training": { organ: "Darm", diseases: ["B12-Mangel (Dysbiose)", "Insulinresistenz", "PSSM"], type: "Erkrankung", cat: "Gewicht" },
+  "Chronischer Husten": { organ: "Darm", diseases: ["KPU - Schwefelmangel", "Colitis - trockene Atemwege", "Futteraspiration", "COPD"], type: "Erkrankung", note: "Oft einhergehend mit Darmstörungen!", cat: "Atemwege" },
+  "Heustauballergie / Reizhusten": { organ: "Darm", diseases: ["Schwefelmangel - trockene Atemwege", "Leaky Gut", "Futteraspiration"], type: "Erkrankung", cat: "Atemwege" },
+  "Husten beim Fressen": { organ: "Schlund", diseases: ["Futteraspiration"], type: "Erkrankung", note: "Hastiges Fressen, staubiges Heu", cat: "Atemwege" },
+  "Hengstiges Verhalten (Stute/Wallach)": { organ: "Leber", diseases: ["Gestörter Hormonabbau (Leber)"], type: "Erkrankung", note: "DD: verminderter Abbau (Leber) vs. erhöhte Produktion (endokrin)", cat: "Hormone" },
+  "Cushing-Symptome": { organ: "Leber", diseases: ["KPU", "Gestörter Hormonabbau", "Insulinresistenz (60%)", "Echtes PPID (selten)"], type: "Erkrankung", note: "Echtes PPID selten. Meist IR oder KPU.", cat: "Hormone" },
+  "Untypisches Schwitzverhalten": { organ: "Niere", diseases: ["Subklinische Niereninsuffizienz", "EMS"], type: "Frühmarker", note: "Zu stark ODER zu schwach", cat: "Wasser & Kreislauf" },
+  "Polydipsie / Polyurie": { organ: "Niere", diseases: ["Subklinische Niereninsuffizienz", "Cushing", "Diabetes insipidus"], type: "Frühmarker", cat: "Wasser & Kreislauf" },
+  "Mineralleckstein auffressen": { organ: "Niere", diseases: ["Subklinische Niereninsuffizienz", "Mineralstoffmangel"], type: "Frühmarker", cat: "Wasser & Kreislauf" },
+  "Schlechte Wundheilung": { organ: "Immunsystem", diseases: ["Subklinische Niereninsuffizienz", "Dysbiose", "Zinkmangel (KPU)"], type: "Frühmarker", cat: "Immunsystem" },
+  "Infektanfälligkeit": { organ: "Immunsystem", diseases: ["Subklinische Niereninsuffizienz", "Dysbiose"], type: "Frühmarker", cat: "Immunsystem" },
+  "Blauer Augenschimmer": { organ: "Leber", diseases: ["Leberüberlastung", "KPU"], type: "Frühmarker", note: "Nicht Birkenauge!", cat: "Augen" },
+  "Wiederkehrende Augenentzündungen": { organ: "Leber", diseases: ["Leberüberlastung", "KPU"], type: "Frühmarker", cat: "Augen" },
+  "Multimorbidität": { organ: "Leber", diseases: ["KPU"], type: "Erkrankung", note: "Schlüsselsymptom! + Non-responder + Symptomverschiebung = KPU", cat: "Systemisch" },
+  "Non-responder auf Therapie": { organ: "Leber", diseases: ["KPU", "Chronischer Stress - Leberüberlastung"], type: "Erkrankung", cat: "Systemisch" },
+  "Symptomverschiebung bei Therapie": { organ: "Leber", diseases: ["KPU"], type: "Erkrankung", note: "Symptom geheilt  -  neues an anderer Stelle", cat: "Systemisch" },
+};
+
+const CATEGORIES = ["Fell & Haut","Hufe","Verdauung","Magen","Zähne & Maul","Bewegungsapparat","Gewicht","Atemwege","Hormone","Wasser & Kreislauf","Immunsystem","Augen","Verhalten","Systemisch"];
+const CAT_ICONS = {"Fell & Haut":"","Hufe":"","Verdauung":"","Magen":"","Zähne & Maul":"","Bewegungsapparat":"","Gewicht":"","Atemwege":"","Hormone":"","Wasser & Kreislauf":"","Immunsystem":"","Augen":"","Verhalten":"","Systemisch":""};
+
+// ============================================================
+// STATE
+// ============================================================
+let selectedSymptoms = new Set();
+let chatHistory = [];
+let activeTab = 'chat';
+let activeCat = null;
+let isLoading = false;
+
+// ============================================================
+// SYSTEM PROMPT (embedded)
+// ============================================================
+const SYSTEM_PROMPT = `Du bist der Sanoanimal Diagnose-Assistent, ein Fachsystem für die Differentialdiagnostik von Pferde-Stoffwechselerkrankungen. Du basierst auf der Wissensbasis von Dr. Christina Fritz.
+
+DEINE ROLLE: Du hilfst Sanoanimal-Therapeuten bei der Symptom-zu-Diagnose-Zuordnung. Der Therapeut beschreibt Beobachtungen – du extrahierst Symptome, ordnest Organsystemen und Erkrankungen zu, und stellst gezielte Nachfragen.
+
+ABLAUF:
+1. Therapeut beschreibt Beobachtungen (frei formuliert)
+2. Du extrahierst erkannte Symptome und listest sie als **Erkannte Symptome:** auf
+3. Du ordnest Organsystemen und Krankheiten zu als **Diagnose-Hypothesen:**
+4. Du stellst 2-3 gezielte Nachfragen als **Nachfragen:**
+5. Nach weiteren Infos verfeinerst du die Diagnose
+
+WICHTIGE REGELN:
+
+FRÜHMARKER: >=3 gleichzeitig  -  Leberüberlastung/KPU wahrscheinlich. + Non-responder/Symptomverschiebung  -  KPU-Verdacht.
+
+FRÜHMARKER LEBER: Stichelhaare, blauer Augenschimmer, Hungerhaare, Fellstreifen Rumpf, Königstaler, Rappen rötlich, Gallen Fesseln/Sprunggelenke, Sehnenprobleme nicht-unfallbedingt, Schreckhaftigkeit, angelaufene Beine, Gewichtsverlust, Leistungsabfall, Lethargie/Gähnen/Flehmen, aufgezogenes Abdomen, leichte Koliken, gelbliche Augenschleimhäute
+
+FRÜHMARKER NIERE: Stumpfes Fell (Häkchen), schlechter Fellwechsel, dünnes Winterfell/Langhaar, Hautüberempfindlichkeit, Juckreiz, Ekzem/Sommerekzem, Mauke, Nesselfieber, Warzen/Sarkoide, Pilz/Haarlinge, Hufrehe, Hufabszesse, Strahlfäule, White Line Disease, schlechte Hornqualität, angelaufene Beine, schwammige Gelenke, dicker Halskamm, Flankenpolster (oft Fett verwechselt!), untypisches Schwitzen, Polydipsie/Polyurie, Mineralleckstein auffressen, schlechte Wundheilung
+
+SCHLÜSSEL-DD:
+- EMS (Fett, Diät wirkt langsam) vs. Pseudo-EMS (Lymphe, Diät WIRKUNGSLOS!)
+- Halskamm dick+heiß = Hufrehe IMMINENT!
+- Hufrehe: metabolisch vs. fütterungsbedingt vs. Belastung vs. Medikamente vs. KPU
+- Cushing: echtes PPID selten, 60% = Spätfolge IR, oder KPU/gestörter Hormonabbau
+- Kotwasser: Darmsanierung ohne Effekt  -  Magengeschwür!
+- Blähbauch ≠ Übergewicht! Reduktionsdiät verschlimmert Dysbiose!
+
+LABOR-FALLEN:
+- Leberenzyme NICHT erhöht bei KPU
+- Nierenwerte erst ab ~70% Insuffizienz auffällig
+- Selen niedrig = oft sekundär Zinkmangel (KPU); Selen zufüttern  -  EOTRH/Hufrehe!
+- Insulin: 12h Heu VOR Blutabnahme, KEINE Karenz
+- Kot-pH: 6,8-7,2 gesund; <6,8 Dysbiose; >7,2 Raufutterpausen
+
+NACHFRAGEN:
+- Fütterung (Heu ad lib? Kraftfutter? Heulage? Müsli? Öl? Mineralfutter Selen?)
+- Haltung (Box/Offenstall? Gruppe? Stress? Schlaf?)
+- Bewegung (Intensität? Probleme bei Belastung?)
+- Alter/Rasse (Robustpferd = schlechtere Glucosetoleranz!)
+- Verlauf (seit wann? plötzlich/schleichend? saisonabhängig?)
+- Vorgeschichte (Medikamente? Wurmkuren? Vorerkrankungen?)
+- Labor (Blutbild? Insulin? Glucose? Leberwerte?)
+
+FORMAT: Kurze klare Absätze. Erkannte Symptome auflisten. Diagnosen priorisiert. Max. 3 Nachfragen pro Runde. Bei Akut  -  Tierarzt. Sprache: Deutsch, fachlich, kollegial.`;
+
+// ============================================================
+// FUNCTIONS
+// ============================================================
+
+function switchTab(tab) {
+  activeTab = tab;
+  document.getElementById('tabChat').classList.toggle('active', tab==='chat');
+  document.getElementById('tabPicker').classList.toggle('active', tab==='picker');
+  document.getElementById('chatView').style.display = tab==='chat' ? 'flex' : 'none';
+  document.getElementById('pickerView').style.display = tab==='picker' ? 'block' : 'none';
+  document.getElementById('analyzeBar').style.display = (tab==='picker' && selectedSymptoms.size>0) ? 'flex' : 'none';
+  if (tab==='picker') renderSymptoms();
+}
+
+function toggleSymptom(name) {
+  if (selectedSymptoms.has(name)) selectedSymptoms.delete(name);
+  else selectedSymptoms.add(name);
+  updateUI();
+}
+
+function clearSelection() {
+  selectedSymptoms.clear();
+  updateUI();
+}
+
+function updateUI() {
+  // Badge
+  const badge = document.getElementById('pickerBadge');
+  if (selectedSymptoms.size > 0) { badge.style.display='inline'; badge.textContent=selectedSymptoms.size; }
+  else badge.style.display='none';
+
+  // Analyze bar
+  document.getElementById('analyzeBar').style.display = (activeTab==='picker'&&selectedSymptoms.size>0)?'flex':'none';
+  document.getElementById('selectedCount').textContent = selectedSymptoms.size;
+
+  // Selected bar in chat
+  renderSelectedBar();
+
+  // Re-render symptoms if on picker
+  if (activeTab==='picker') renderSymptoms();
+}
+
+function renderSelectedBar() {
+  const bar = document.getElementById('selectedBar');
+  if (selectedSymptoms.size === 0) { bar.innerHTML=''; return; }
+  bar.innerHTML = [...selectedSymptoms].map(s =>
+    `<span class="selected-tag">${s} <button onclick="toggleSymptom('${s.replace(/'/g,"\\'")}')">×</button></span>`
+  ).join('');
+}
+
+function renderSymptoms() {
+  const search = document.getElementById('searchBox').value.toLowerCase();
+  const list = document.getElementById('symList');
+  const filter = document.getElementById('catFilter');
+
+  // Categories
+  filter.innerHTML = `<button class="cat-btn ${!activeCat?'active':''}" onclick="activeCat=null;renderSymptoms()">Alle</button>` +
+    CATEGORIES.map(c => {
+      const cnt = Object.values(SYMPTOMS).filter(s=>s.cat===c).length;
+      return `<button class="cat-btn ${activeCat===c?'active':''}" onclick="activeCat='${c}';renderSymptoms()">${CAT_ICONS[c]||''} ${c} <span class="cnt">${cnt}</span></button>`;
+    }).join('');
+
+  // Filter
+  const filtered = Object.entries(SYMPTOMS).filter(([n,d]) => {
+    if (search && !n.toLowerCase().includes(search)) return false;
+    if (activeCat && d.cat !== activeCat) return false;
+    return true;
+  });
+
+  list.innerHTML = filtered.map(([name, data]) => {
+    const sel = selectedSymptoms.has(name);
+    const typeCls = data.type==='Frühmarker'?'badge-fm':data.type==='AKUT'?'badge-akut':'badge-erk';
+    return `<button class="sym-card ${sel?'selected':''}" onclick="toggleSymptom('${name.replace(/'/g,"\\'")}')">
+      <div class="sym-check">${sel?'x':''}</div>
+      <div class="sym-info">
+        <div class="sym-name">${name}</div>
+        <div class="sym-meta">
+          <span class="sym-badge ${typeCls}">${data.type==='AKUT'?'AKUT':data.type}</span>
+          <span class="badge-organ">${data.organ}</span>
+        </div>
+        ${data.note?`<div class="sym-note">${data.note}</div>`:''}
+      </div>
+    </button>`;
+  }).join('');
+}
+
+function analyzeSelection() {
+  if (selectedSymptoms.size === 0) return;
+  const syms = [...selectedSymptoms];
+  const msg = `Ich habe folgende Symptome am Pferd beobachtet:\n\n${syms.map(s=>'• '+s).join('\n')}\n\nBitte analysiere diese Symptomkombination.`;
+  switchTab('chat');
+  document.getElementById('chatInput').value = '';
+  addMessage('user', msg);
+  callAPI(msg);
+}
+
+function addMessage(role, content) {
+  const div = document.createElement('div');
+  div.className = `msg ${role}`;
+  div.innerHTML = `<div class="msg-content">${formatContent(content)}</div>`;
+  document.getElementById('chatMessages').appendChild(div);
+  scrollToBottom();
+}
+
+function formatContent(text) {
+  // Bold
+  text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  // Line breaks
+  text = text.replace(/\n/g, '<br>');
+  return text;
+}
+
+function scrollToBottom() {
+  const el = document.getElementById('chatMessages');
+  setTimeout(() => el.scrollTop = el.scrollHeight, 50);
+}
+
+function showTyping() {
+  const div = document.createElement('div');
+  div.className = 'typing';
+  div.id = 'typingIndicator';
+  div.textContent = 'Analysiere';
+  document.getElementById('chatMessages').appendChild(div);
+  scrollToBottom();
+}
+
+function hideTyping() {
+  const el = document.getElementById('typingIndicator');
+  if (el) el.remove();
+}
+
+async function sendMessage() {
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if (!text || isLoading) return;
+
+  // Prepend selected symptoms context if any
+  let fullMsg = text;
+  if (selectedSymptoms.size > 0 && chatHistory.length === 0) {
+    fullMsg = `[Vorausgewählte Symptome: ${[...selectedSymptoms].join(', ')}]\n\n${text}`;
+  }
+
+  input.value = '';
+  input.style.height = 'auto';
+  addMessage('user', text);
+  callAPI(fullMsg);
+}
+
+async function callAPI(userMessage) {
+  isLoading = true;
+  document.getElementById('sendBtn').disabled = true;
+  showTyping();
+
+  chatHistory.push({ role: 'user', content: userMessage });
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1500,
+        system: SYSTEM_PROMPT,
+        messages: chatHistory.slice(-10) // Keep last 10 messages for context
+      })
+    });
+
+    const data = await response.json();
+    hideTyping();
+
+    if (data.content && data.content[0]) {
+      const reply = data.content[0].text;
+      chatHistory.push({ role: 'assistant', content: reply });
+      addMessage('assistant', reply);
+    } else if (data.error) {
+      addMessage('system', 'ACHTUNG API-Fehler: ' + (data.error.message || 'Unbekannter Fehler'));
+    }
+  } catch (err) {
+    hideTyping();
+    addMessage('system', 'ACHTUNG Verbindungsfehler: ' + err.message);
+  }
+
+  isLoading = false;
+  document.getElementById('sendBtn').disabled = false;
+}
+
+// Auto-resize textarea
+document.getElementById('chatInput').addEventListener('input', function() {
+  this.style.height = 'auto';
+  this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+});
+
+// Init
+renderSymptoms();
+</script>
+</body>
+</html>
