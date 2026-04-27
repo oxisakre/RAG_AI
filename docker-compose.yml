@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  db:
+    # Usamos la imagen oficial que ya trae pgvector compilado
+    image: pgvector/pgvector:pg16
+    container_name: sanoanimal_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: adminpassword
+      POSTGRES_DB: sanoanimal
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      # Este mapeo le dice a Postgres que corra el archivo al iniciar:
+      - ./therapeutencheck_schema.sql:/docker-entrypoint-initdb.d/init.sql
+
+volumes:
+  pgdata:
