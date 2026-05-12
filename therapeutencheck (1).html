@@ -1202,130 +1202,6 @@
 
     <script>
       // ── Interactive Prototype Logic ──
-      // Nueva función para enviar el mensaje a tu API FastAPI
-      async function sendMessage() {
-        const input = document.getElementById("chatInput");
-        const text = input.value.trim();
-        if (!text) return;
-
-        const messages = document.getElementById("chatMessages");
-
-        // 1. Dibujar el mensaje del usuario en la pantalla
-        const userMsg = document.createElement("div");
-        userMsg.className = "msg user";
-        userMsg.innerHTML = `
-      <div class="msg-avatar human">MK</div>
-      <div class="msg-bubble">${escapeHtml(text)}</div>
-    `;
-        messages.appendChild(userMsg);
-
-        input.value = "";
-        input.style.height = "auto";
-        messages.scrollTop = messages.scrollHeight;
-
-        // 2. Dibujar la animación de "escribiendo..."
-        const typing = document.createElement("div");
-        typing.className = "msg assistant";
-        typing.id = "typingMsg";
-        typing.innerHTML = `
-      <div class="msg-avatar system">S</div>
-      <div class="msg-bubble">
-        <div class="typing-indicator">
-          <div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>
-        </div>
-      </div>
-    `;
-        messages.appendChild(typing);
-        messages.scrollTop = messages.scrollHeight;
-
-        // 3. Conectarse a tu servidor RAG (FastAPI)
-        try {
-          const response = await fetch("http://localhost:8000/ask", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ question: text }),
-          });
-
-          const data = await response.json();
-          typing.remove(); // Borrar la animación de escribiendo
-
-          // 4. Transformar el texto de la IA en los bloques visuales de Carsten
-          const formattedHTML = parseRAGResponse(data.answer);
-
-          const assistantMsg = document.createElement("div");
-          assistantMsg.className = "msg assistant";
-          assistantMsg.innerHTML = `
-        <div class="msg-avatar system">S</div>
-        <div class="msg-bubble">
-          Hier ist die Auswertung für deine Anfrage:
-          ${formattedHTML}
-        </div>
-      `;
-          messages.appendChild(assistantMsg);
-        } catch (error) {
-          typing.remove();
-          console.error("Error al conectar con la API:", error);
-          const errorMsg = document.createElement("div");
-          errorMsg.className = "msg assistant";
-          errorMsg.innerHTML = `<div class="msg-avatar system">S</div><div class="msg-bubble warning-box">⚠ Fehler: Server nicht erreichbar. Stelle sicher, dass die FastAPI läuft.</div>`;
-          messages.appendChild(errorMsg);
-        }
-        messages.scrollTop = messages.scrollHeight;
-      }
-
-      // Función mágica que corta el texto de Gemini y lo mete en los estilos HTML
-      function parseRAGResponse(text) {
-        let praxisText = "";
-        let faktenText = "";
-
-        // Cortamos el texto usando los títulos que le obligamos a generar a la IA en el System Prompt
-        const parts = text.split(/Sanoanimal Praxis-Einordnung|Fakten — Wissenschaftliche Literatur/);
-
-        if (parts.length >= 3) {
-          praxisText = parts[1].replace(/\*\*/g, "").replace(/###/g, "").trim();
-          faktenText = parts[2].replace(/\*\*/g, "").replace(/###/g, "").trim();
-        } else {
-          return text.replace(/\n/g, "<br>"); // Fallback por si la IA cambia el formato
-        }
-
-        // Convertimos los asteriscos de Markdown en saltos de línea legibles
-        praxisText = praxisText.replace(/\n/g, "<br>");
-        faktenText = faktenText.replace(/\* (.*?)(?=\n|$)/g, "• $1<br>").replace(/\n/g, "<br>");
-
-        return `
-          <!-- Bloque Sanoanimal -->
-          <div class="source-block sanoanimal">
-            <div class="source-block-header">
-              <span class="sb-icon">S</span>
-              Sanoanimal Praxis-Einordnung
-            </div>
-            <div class="source-block-body">
-              ${praxisText}
-              <div class="confidence-bar">
-                <span>Praxis-Evidenz</span>
-                <div class="conf-track"><div class="conf-fill high"></div></div>
-                <span>Generiert durch Sanoanimal AI</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Bloque Fakten (El de la foto) -->
-          <div class="source-block fakten">
-            <div class="source-block-header">
-              <span class="sb-icon">F</span>
-              Fakten — Wissenschaftliche Literatur
-            </div>
-            <div class="source-block-body">
-              ${faktenText}
-              <div class="confidence-bar">
-                <span>Datenqualität</span>
-                <div class="conf-track"><div class="conf-fill high"></div></div>
-                <span>Geprüfte Datenbank (pgvector)</span>
-              </div>
-            </div>
-          </div>
-      `;
-      }
 
       // Category chip toggle
       document.querySelectorAll(".cat-chip").forEach((chip) => {
@@ -1357,62 +1233,132 @@
         }
       }
 
-      // Send message (prototype: echo + simulated response)
-      function sendMessage() {
+      // ── Función Real para comunicarse con FastAPI ──
+      async function sendMessage() {
         const input = document.getElementById("chatInput");
         const text = input.value.trim();
         if (!text) return;
 
         const messages = document.getElementById("chatMessages");
 
-        // User message
+        // 1. Mostrar mensaje del usuario
         const userMsg = document.createElement("div");
         userMsg.className = "msg user";
         userMsg.innerHTML = `
-      <div class="msg-avatar human">MK</div>
-      <div class="msg-bubble">${escapeHtml(text)}</div>
-    `;
+          <div class="msg-avatar human">MK</div>
+          <div class="msg-bubble">${escapeHtml(text)}</div>
+        `;
         messages.appendChild(userMsg);
 
         input.value = "";
         input.style.height = "auto";
         messages.scrollTop = messages.scrollHeight;
 
-        // Typing indicator
+        // 2. Mostrar "Escribiendo..."
         const typing = document.createElement("div");
         typing.className = "msg assistant";
         typing.id = "typingMsg";
         typing.innerHTML = `
-      <div class="msg-avatar system">S</div>
-      <div class="msg-bubble">
-        <div class="typing-indicator">
-          <div class="typing-dot"></div>
-          <div class="typing-dot"></div>
-          <div class="typing-dot"></div>
-        </div>
-      </div>
-    `;
+          <div class="msg-avatar system">S</div>
+          <div class="msg-bubble">
+            <div class="typing-indicator">
+              <div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>
+            </div>
+          </div>
+        `;
         messages.appendChild(typing);
         messages.scrollTop = messages.scrollHeight;
 
-        // Simulated response after delay
-        setTimeout(() => {
+        // 3. Conexión a la API
+        try {
+          const response = await fetch("https://parade-passerby-departed.ngrok-free.dev/ask", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ question: text }),
+          });
+
+          const data = await response.json();
+          typing.remove(); // Borrar "Escribiendo..."
+
+          // 4. Formatear la respuesta de la IA
+          const formattedHTML = parseRAGResponse(data.answer);
+
+          const assistantMsg = document.createElement("div");
+          assistantMsg.className = "msg assistant";
+          assistantMsg.innerHTML = `
+            <div class="msg-avatar system">S</div>
+            <div class="msg-bubble" style="width: 100%;">
+              ${formattedHTML}
+            </div>
+          `;
+          messages.appendChild(assistantMsg);
+        } catch (error) {
           typing.remove();
-          const response = document.createElement("div");
-          response.className = "msg assistant";
-          response.innerHTML = `
-        <div class="msg-avatar system">S</div>
-        <div class="msg-bubble">
-          Ich suche in der Datenbank nach <strong>${escapeHtml(text)}</strong>…<br><br>
-          <em style="color: var(--sa-text-light);">[ Prototyp-Modus — Im Produktivbetrieb würde hier die Antwort aus der Sanoanimal-Wissensbasis und/oder CliniPharm-Daten erscheinen, inkl. strukturierter Ergebniskarten. ]</em>
-          <div class="source-tag">
-            📚 Quelle: Wird im Produktivbetrieb automatisch zugeordnet
-          </div>
-        </div>
-      `;
-          messages.appendChild(response);
-          messages.scrollTop = messages.scrollHeight;
-        }, 1800);
+          console.error("Error al conectar con la API:", error);
+          const errorMsg = document.createElement("div");
+          errorMsg.className = "msg assistant";
+          errorMsg.innerHTML = `<div class="msg-avatar system">S</div><div class="msg-bubble warning-box">⚠ Fehler: Server nicht erreichbar. API läuft nicht.</div>`;
+          messages.appendChild(errorMsg);
+        }
+        messages.scrollTop = messages.scrollHeight;
+      }
+
+      // ── Transformar el texto de la IA en bloques de diseño ──
+      function parseRAGResponse(text) {
+        let praxisText = "";
+        let faktenText = "";
+
+        const parts = text.split(/\*{0,2}SANOANIMAL PRAXIS-EINORDNUNG\*{0,2}|\*{0,2}Sanoanimal Praxis-Einordnung\*{0,2}/i);
+        const hasBothSections = parts.length >= 2 && /\*{0,2}FAKTEN[^*]*LITERATUR\*{0,2}|\*{0,2}Fakten[^*]*Literatur\*{0,2}/i.test(parts[1] || "");
+
+        if (parts.length >= 2) {
+          const faktenSplit = (parts[1] || "").split(/\*{0,2}FAKTEN[^*]*LITERATUR\*{0,2}|\*{0,2}Fakten[^*]*Literatur\*{0,2}/i);
+          praxisText = faktenSplit[0].replace(/\*\*/g, "").replace(/###/g, "").trim();
+          faktenText = (faktenSplit[1] || "").replace(/\*\*/g, "").replace(/###/g, "").trim();
+        } else {
+          return text.replace(/\n/g, "<br>");
+        }
+
+        function formatSection(raw) {
+          return raw
+            .replace(/^\* /gm, "• ")
+            .replace(/\n/g, "<br>");
+        }
+
+        praxisText = formatSection(praxisText);
+        faktenText = formatSection(faktenText);
+
+        return `
+              <div class="source-block sanoanimal" style="margin-bottom: 12px;">
+                <div class="source-block-header">
+                  <span class="sb-icon">S</span>
+                  Sanoanimal Praxis-Einordnung
+                </div>
+                <div class="source-block-body">
+                  ${praxisText}
+                  <div class="confidence-bar">
+                    <span>Praxis-Evidenz</span>
+                    <div class="conf-track"><div class="conf-fill high"></div></div>
+                    <span>Gemini 2.5 Flash Lite + Sanoanimal DB</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="source-block fakten">
+                <div class="source-block-header">
+                  <span class="sb-icon">F</span>
+                  Fakten — Wissenschaftliche Literatur
+                </div>
+                <div class="source-block-body" style="font-size: 13.5px; line-height: 1.65;">
+                  ${faktenText}
+                  <div class="confidence-bar" style="margin-top: 15px;">
+                    <span>Datenqualität</span>
+                    <div class="conf-track"><div class="conf-fill high"></div></div>
+                    <span>PostgreSQL pgvector</span>
+                  </div>
+                </div>
+              </div>
+          `;
       }
 
       function escapeHtml(text) {
