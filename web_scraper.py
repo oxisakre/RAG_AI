@@ -31,7 +31,11 @@ HEADERS = {"User-Agent": "Mozilla/5.0 (compatible; SanoAnimalBot/1.0)"}
 SKIP_EXTENSIONS = {".pdf", ".jpg", ".jpeg", ".png", ".gif", ".svg",
                    ".mp4", ".mp3", ".zip", ".doc", ".docx", ".webp"}
 SKIP_PATTERNS   = ["/cart", "/checkout", "/account", "/login",
-                   "/wp-admin", "/wp-json", "/feed", "?add-to-cart"]
+                   "/wp-admin", "/wp-json", "/feed", "?add-to-cart",
+                   "/datenschutz", "/impressum", "/agb", "/widerrufsrecht",
+                   "/wettbewerbsregeln", "/customer-service", "/about-porto",
+                   "/kontakt", "/contact", "/cookie", "/privacy",
+                   "/bildtest", "-test", "/test-"]
 MIN_TEXT_LENGTH = 150   # chars — páginas más cortas son nav/404/etc
 MAX_TEXT_CHARS  = 8000  # truncate antes de embedear (límite de tokens Gemini)
 SLEEP_BETWEEN_EMBEDS = 0.7  # ~85 RPM, free tier es 100 RPM
@@ -43,9 +47,15 @@ def md5(text: str) -> str:
     return hashlib.md5(text.encode("utf-8")).hexdigest()
 
 
-def is_valid_url(url: str, domain: str) -> bool:
+def bare_domain(netloc: str) -> str:
+    """Normaliza dominio quitando www. para comparación flexible."""
+    return netloc.removeprefix("www.")
+
+
+def is_valid_url(url: str, base_domain: str) -> bool:
+    """Acepta URLs del mismo dominio con o sin www."""
     parsed = urlparse(url)
-    if parsed.netloc != domain:
+    if bare_domain(parsed.netloc) != bare_domain(base_domain):
         return False
     if any(url.endswith(ext) for ext in SKIP_EXTENSIONS):
         return False
@@ -56,6 +66,22 @@ def is_valid_url(url: str, domain: str) -> bool:
 
 # ── Descubrimiento de URLs ────────────────────────────────────────────────────
 
+def get_sitemap_from_robots(base_url: str) -> list[str]:
+    """Lee robots.txt y extrae las URLs de Sitemap: que declare."""
+    try:
+        r = requests.get(f"{base_url}/robots.txt", headers=HEADERS, timeout=10)
+        if r.status_code != 200:
+            return []
+        sitemaps = [
+            line.split(":", 1)[1].strip()
+            for line in r.text.splitlines()
+            if line.lower().startswith("sitemap:")
+        ]
+        return sitemaps
+    except Exception:
+        return []
+
+
 def fetch_sitemap_urls(sitemap_url: str) -> list[str]:
     """Descarga un sitemap.xml y devuelve todas las <loc>."""
     try:
@@ -63,7 +89,6 @@ def fetch_sitemap_urls(sitemap_url: str) -> list[str]:
         if r.status_code != 200:
             return []
         soup = BeautifulSoup(r.content, "lxml-xml")
-        # Sitemap index → recursivo
         nested = [sm.find("loc").text.strip()
                   for sm in soup.find_all("sitemap") if sm.find("loc")]
         if nested:
@@ -71,7 +96,6 @@ def fetch_sitemap_urls(sitemap_url: str) -> list[str]:
             for sub in nested:
                 urls.extend(fetch_sitemap_urls(sub))
             return urls
-        # Sitemap regular
         return [loc.text.strip() for loc in soup.find_all("loc")]
     except Exception as e:
         print(f"    Error fetching sitemap {sitemap_url}: {e}")
@@ -79,18 +103,25 @@ def fetch_sitemap_urls(sitemap_url: str) -> list[str]:
 
 
 def discover_urls(base_url: str) -> list[str]:
-    """Intenta sitemap.xml; si no hay, crawlea recursivamente."""
+    """Busca sitemap por rutas comunes y robots.txt; si no hay, crawlea."""
     domain = urlparse(base_url).netloc
 
-    for candidate in [f"{base_url}/sitemap.xml", f"{base_url}/sitemap_index.xml"]:
+    sitemap_candidates = [
+        f"{base_url}/sitemap.xml",
+        f"{base_url}/sitemap_index.xml",
+        f"{base_url}/wp-sitemap.xml",        # WordPress
+        f"{base_url}/sitemap-index.xml",
+    ] + get_sitemap_from_robots(base_url)    # lo que declare robots.txt
+
+    for candidate in sitemap_candidates:
         urls = fetch_sitemap_urls(candidate)
         if urls:
             valid = [u for u in urls if is_valid_url(u, domain)]
-            print(f"  Sitemap: {candidate} → {len(urls)} URLs totales, {len(valid)} válidas")
+            print(f"  Sitemap: {candidate}")
+            print(f"    → {len(urls)} URLs en sitemap, {len(valid)} válidas (mismo dominio, sin recursos estáticos)")
             return valid
 
-    # Fallback: crawler recursivo
-    print("  Sin sitemap, usando crawler recursivo (máx. 500 páginas)...")
+    print("  Sin sitemap encontrado, usando crawler recursivo (máx. 500 páginas)...")
     return crawl_recursive(base_url, domain)
 
 
@@ -103,6 +134,7 @@ def crawl_recursive(base_url: str, domain: str, max_pages: int = 500) -> list[st
         visited.add(url)
         if not is_valid_url(url, domain):
             continue
+        print(f"  Crawling [{len(found)+1}] {url[:80]}", flush=True)
         try:
             r = requests.get(url, headers=HEADERS, timeout=10)
             if r.status_code != 200 or "text/html" not in r.headers.get("Content-Type", ""):
@@ -114,9 +146,9 @@ def crawl_recursive(base_url: str, domain: str, max_pages: int = 500) -> list[st
                 if full not in visited:
                     queue.append(full)
             time.sleep(0.5)
-        except Exception:
-            pass
-    print(f"  Crawler: {len(found)} páginas encontradas")
+        except Exception as e:
+            print(f"    Error: {e}")
+    print(f"  Crawler terminado: {len(found)} páginas")
     return found
 
 

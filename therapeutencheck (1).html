@@ -1295,10 +1295,25 @@
         } catch (error) {
           typing.remove();
           console.error("Error al conectar con la API:", error);
+          let errText = "⚠ Server nicht erreichbar. API läuft nicht.";
+          if (error?.status === 429 || (error?.message && error.message.includes("429"))) {
+            errText = "⚠ API quota reached. Please wait a moment and try again.";
+          }
           const errorMsg = document.createElement("div");
           errorMsg.className = "msg assistant";
-          errorMsg.innerHTML = `<div class="msg-avatar system">S</div><div class="msg-bubble warning-box">⚠ Fehler: Server nicht erreichbar. API läuft nicht.</div>`;
+          errorMsg.innerHTML = `<div class="msg-avatar system">S</div><div class="msg-bubble warning-box">${errText}</div>`;
           messages.appendChild(errorMsg);
+        }
+
+        // Handle non-2xx responses
+        async function fetchWithErrorCheck(url, opts) {
+          const r = await fetch(url, opts);
+          if (!r.ok) {
+            const err = new Error(`HTTP ${r.status}`);
+            err.status = r.status;
+            throw err;
+          }
+          return r;
         }
         messages.scrollTop = messages.scrollHeight;
       }
@@ -1325,8 +1340,25 @@
             .replace(/\n/g, "<br>");
         }
 
+        function formatSources(raw) {
+          // Convert each URL to a clickable link
+          return raw
+            .replace(/(https?:\/\/[^\s<>"]+)/g, '<a href="$1" target="_blank" rel="noopener" style="color:var(--sa-blue);text-decoration:none;font-weight:500;word-break:break-all;">$1</a>')
+            .replace(/\n/g, "<br>");
+        }
+
+        // Separate Sources: block from fakten body
+        const sourcesSplit = faktenText.split(/\bSources?:/i);
+        const faktenBody = formatSection(sourcesSplit[0].trim());
+        const sourcesRaw = sourcesSplit[1] ? sourcesSplit[1].trim() : "";
+        const sourcesHTML = sourcesRaw
+          ? `<div style="margin-top:12px;padding:10px 12px;background:rgba(41,128,185,0.06);border-radius:6px;border-left:3px solid var(--sa-blue);font-size:12px;line-height:1.8;">
+               <span style="font-weight:600;color:var(--sa-blue);text-transform:uppercase;letter-spacing:0.5px;font-size:11px;">Sources</span><br>
+               ${formatSources(sourcesRaw)}
+             </div>`
+          : "";
+
         praxisText = formatSection(praxisText);
-        faktenText = formatSection(faktenText);
 
         return `
               <div class="source-block sanoanimal" style="margin-bottom: 12px;">
@@ -1350,7 +1382,8 @@
                   Fakten — Wissenschaftliche Literatur
                 </div>
                 <div class="source-block-body" style="font-size: 13.5px; line-height: 1.65;">
-                  ${faktenText}
+                  ${faktenBody}
+                  ${sourcesHTML}
                   <div class="confidence-bar" style="margin-top: 15px;">
                     <span>Datenqualität</span>
                     <div class="conf-track"><div class="conf-fill high"></div></div>

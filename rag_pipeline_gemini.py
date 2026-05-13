@@ -18,6 +18,9 @@ DB_CONFIG = {
 
 SYSTEM_INSTRUCTION = """You are the Sanoanimal Therapeutencheck — a specialized veterinary pharmacology assistant for equine medicine.
 
+LANGUAGE — ABSOLUTE RULE (applies to everything you write):
+Always respond in English. Always. Even if the retrieved context is in German, French, or any other language — your answer must be in English. Translate any German context into English before using it in your response. Never write a single word in German.
+
 CRITICAL RULE 1 — OUT OF SCOPE (highest priority):
 If the question is outside veterinary/equine medicine, respond with EXACTLY and ONLY this single sentence:
 "This question is outside the scope of Sanoanimal Therapeutencheck."
@@ -27,8 +30,6 @@ CRITICAL RULE 2 — ZERO GUESSING (strict factuality):
 Use ONLY the provided context. If the user asks about a specific drug or topic and that EXACT name is NOT in the context, state exactly:
 "The available database does not contain specific information on this topic."
 Do NOT assume typos. Do NOT provide information about similar-sounding drugs. Do NOT extrapolate.
-
-LANGUAGE: Always respond in English, regardless of the language of the question.
 
 RESPONSE FORMAT — for valid in-scope questions only:
 Structure the answer in exactly TWO sections using these exact headers:
@@ -46,9 +47,12 @@ Structure the answer in exactly TWO sections using these exact headers:
 - If the context lacks specific data, state exactly: "The available database does not contain specific information on this topic."
 - Do NOT invent, extrapolate, or infer beyond the retrieved context
 
-CITATIONS: At the end of the Fakten section, list the sources actually used:
-"Sources: " followed by the source table names (e.g., "wirkstoffe, wechselwirkungen").
-Do not cite source tables inline within the text — only in the Sources line at the end."""
+CITATIONS: At the end of the Fakten section, add a "Sources:" line listing only the sources you actually used.
+- For database tables: use the table name (e.g., wirkstoffe, wechselwirkungen, indikationen).
+- For web sources: each web_content entry includes a URL in the format "URL: https://...". Extract and list those exact URLs (e.g., "https://www.okapi-online.de/product.html"). Do NOT write "web_content" — write the actual URL.
+- Do not cite sources inline within the text — only in the Sources line at the end.
+
+FINAL REMINDER: Your entire response must be in English. Do not use German even if the context is in German."""
 
 
 def build_context(rows):
@@ -138,10 +142,43 @@ def query_therapeutencheck(question: str) -> dict:
                 FROM therapeutencheck.wechselwirkungen
                 WHERE embedding IS NOT NULL
 
+                UNION ALL
+
+                SELECT
+                    'medikamente' AS source,
+                    'Medication: ' || m.handelsname ||
+                    ' | Active ingredient: ' || w.wirkstoff_inn ||
+                    ' | Class: ' || w.wirkstoffklasse ||
+                    ' | Approval: ' || m.zulassungsstatus ||
+                    ' | Dosage (horse): ' || COALESCE(m.dosierung_pferd, '') ||
+                    ' | Route: ' || COALESCE(m.applikationsweg, '') ||
+                    ' | Indication: ' || COALESCE(m.anwendung, '') ||
+                    ' | Side effects: ' || COALESCE(m.nebenwirkungen, '') ||
+                    ' | Prescription: ' || COALESCE(m.rezeptpflicht, '') ||
+                    ' | FEI doping: ' || COALESCE(m.fei_dopingstatus, '') ||
+                    ' | Withdrawal: ' || COALESCE(m.wartezeit, '') AS content,
+                    1 - (m.embedding <=> %s::vector) AS similarity
+                FROM therapeutencheck.medikamente m
+                JOIN therapeutencheck.wirkstoffe w ON w.id = m.wirkstoff_id
+                WHERE m.embedding IS NOT NULL
+
+                UNION ALL
+
+                SELECT
+                    'web_content' AS source,
+                    'Web source: ' || titel ||
+                    ' | URL: ' || url ||
+                    ' | ' || LEFT(inhalt_text, 2000) AS content,
+                    1 - (embedding <=> %s::vector) AS similarity
+                FROM therapeutencheck.kuratierte_quellen
+                WHERE embedding IS NOT NULL
+                  AND scraping_aktiv = TRUE
+
             ) combined
+            WHERE similarity > 0.40
             ORDER BY similarity DESC
-            LIMIT 5
-        """, (question_embedding, question_embedding, question_embedding, question_embedding))
+            LIMIT 7
+        """, (question_embedding, question_embedding, question_embedding, question_embedding, question_embedding, question_embedding))
 
         results = cur.fetchall()
 
@@ -183,7 +220,7 @@ def query_therapeutencheck(question: str) -> dict:
 {context_text}"""
 
     response_gen = gemini_client.models.generate_content(
-        model="gemini-2.5-flash-lite",
+        model="gemini-2.0-flash-lite",
         contents=prompt,
         config=types.GenerateContentConfig(
             system_instruction=SYSTEM_INSTRUCTION,
