@@ -1069,6 +1069,16 @@
               </div>
               <span style="font-size: 12px; color: var(--sa-text-light)">Spezies: Equiden · Quellen: Sanoanimal + CliniPharm</span>
             </div>
+            <div style="display:flex; align-items:center; gap:12px;">
+              <span id="modelLabel" style="font-size:11px; color:var(--sa-text-light); display:none;"></span>
+              <div id="quotaBar" style="display:none; align-items:center; gap:8px; font-size:11px; color:var(--sa-text-light);">
+                <span id="quotaLabel">0 / 500</span>
+                <div style="width:100px; height:6px; background:rgba(0,0,0,0.08); border-radius:3px; overflow:hidden;">
+                  <div id="quotaFill" style="height:100%; border-radius:3px; background:var(--sa-green-light); width:0%; transition:width 0.4s;"></div>
+                </div>
+                <span>today</span>
+              </div>
+            </div>
             <div class="chat-header-actions">
               <button class="icon-btn" title="Verlauf exportieren">📋</button>
               <button class="icon-btn" title="Neuer Check">✨</button>
@@ -1277,10 +1287,33 @@
             body: JSON.stringify({ question: text }),
           });
 
+          if (!response.ok) {
+            const errData = await response.json().catch(() => ({}));
+            const e = new Error(errData.detail || `HTTP ${response.status}`);
+            e.status = response.status;
+            throw e;
+          }
           const data = await response.json();
           typing.remove(); // Borrar "Escribiendo..."
 
-          // 4. Formatear la respuesta de la IA
+          // 4. Actualizar modelo y barra de quota
+          if (data.model) {
+            const lbl = document.getElementById("modelLabel");
+            lbl.textContent = data.model;
+            lbl.style.display = "inline";
+          }
+          if (data.questions_today !== undefined && data.daily_limit) {
+            const bar = document.getElementById("quotaBar");
+            const fill = document.getElementById("quotaFill");
+            const label = document.getElementById("quotaLabel");
+            const pct = Math.min((data.questions_today / data.daily_limit) * 100, 100);
+            bar.style.display = "flex";
+            label.textContent = `${data.questions_today} / ${data.daily_limit}`;
+            fill.style.width = pct + "%";
+            fill.style.background = pct > 80 ? "var(--sa-red)" : pct > 50 ? "var(--sa-gold-dim)" : "var(--sa-green-light)";
+          }
+
+          // 5. Formatear la respuesta de la IA
           const formattedHTML = parseRAGResponse(data.answer);
 
           const assistantMsg = document.createElement("div");
@@ -1296,8 +1329,12 @@
           typing.remove();
           console.error("Error al conectar con la API:", error);
           let errText = "⚠ Server nicht erreichbar. API läuft nicht.";
-          if (error?.status === 429 || (error?.message && error.message.includes("429"))) {
-            errText = "⚠ API quota reached. Please wait a moment and try again.";
+          if (error?.status === 429) {
+            errText = "⚠ API quota reached. Please try again in a few minutes.";
+          } else if (error?.status === 503) {
+            errText = "⚠ Model temporarily busy. Please try again in a few seconds.";
+          } else if (error?.message) {
+            errText = `⚠ ${error.message}`;
           }
           const errorMsg = document.createElement("div");
           errorMsg.className = "msg assistant";
@@ -1371,7 +1408,7 @@
                   <div class="confidence-bar">
                     <span>Praxis-Evidenz</span>
                     <div class="conf-track"><div class="conf-fill high"></div></div>
-                    <span>Gemini 2.5 Flash Lite + Sanoanimal DB</span>
+                    <span>Sanoanimal DB</span>
                   </div>
                 </div>
               </div>

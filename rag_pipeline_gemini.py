@@ -2,11 +2,18 @@ import psycopg2
 from google import genai
 from google.genai import types
 import os
+import time
 from dotenv import load_dotenv
 
 load_dotenv()
 
-gemini_client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+gemini_client = genai.Client(
+    api_key=os.getenv("GEMINI_API_KEY"),
+    http_options=types.HttpOptions(timeout=120000)  # 120 segundos (en ms) máximo por request
+)
+
+GENERATION_MODEL = "gemini-2.5-flash-lite"
+DAILY_LIMIT = 10000  # billing activo — sin límite práctico
 
 DB_CONFIG = {
     "dbname": os.getenv("DB_NAME", "sanoanimal"),
@@ -219,18 +226,34 @@ def query_therapeutencheck(question: str) -> dict:
 --- RETRIEVED CONTEXT FROM DATABASE ---
 {context_text}"""
 
-    response_gen = gemini_client.models.generate_content(
-        model="gemini-2.0-flash-lite",
-        contents=prompt,
-        config=types.GenerateContentConfig(
-            system_instruction=SYSTEM_INSTRUCTION,
-            temperature=0.2
-        )
-    )
+    for attempt in range(4):
+        try:
+            response_gen = gemini_client.models.generate_content(
+                model=GENERATION_MODEL,
+                contents=prompt,
+                config=types.GenerateContentConfig(
+                    system_instruction=SYSTEM_INSTRUCTION,
+                    temperature=0.2
+                )
+            )
+            break
+        except Exception as e:
+            err_str = str(e)
+            if "503" in err_str or "UNAVAILABLE" in err_str or "timed out" in err_str.lower() or "timeout" in err_str.lower():
+                if attempt < 3:
+                    wait = 4 * (attempt + 1)
+                    print(f"  Modelo no responde, reintentando en {wait}s... (intento {attempt+1}/3)")
+                    time.sleep(wait)
+                else:
+                    raise
+            else:
+                raise
 
     return {
         "answer": response_gen.text,
-        "context": results
+        "context": results,
+        "model": GENERATION_MODEL,
+        "daily_limit": DAILY_LIMIT
     }
 
 
