@@ -2,6 +2,7 @@ import psycopg2
 from google import genai
 from google.genai import types
 import os
+import re
 import time
 from dotenv import load_dotenv
 
@@ -33,6 +34,16 @@ If the question is outside veterinary/equine medicine, respond with EXACTLY and 
 "This question is outside the scope of Sanoanimal Therapeutencheck."
 Do NOT add any other text. Do NOT use headers. Do NOT use the two-section format.
 
+This includes — but is not limited to:
+- Greetings or social messages (e.g., "hello", "hi", "how are you", "good morning")
+- Farewell or courtesy messages (e.g., "thank you", "thanks", "bye", "great", "ok", "perfect")
+- Single words or short phrases with no clear veterinary meaning (e.g., "test", "ok", "yes")
+- Questions about humans, cooking, technology, programming, or any non-equine topic
+- Commercial or purchasing questions (e.g., "where can I buy", "is X better than Y brand", "why is X cheaper")
+- Customer service questions (e.g., "they didn't answer my email", "how do I return a product")
+- Requests for general conversation
+Even if the retrieved context contains veterinary content, if the QUESTION ITSELF is not a veterinary/clinical question, respond with the out-of-scope sentence ONLY.
+
 CRITICAL RULE 2 — ZERO GUESSING (strict factuality):
 Use ONLY the provided context. If the user asks about a specific drug or topic and that EXACT name is NOT in the context, state exactly:
 "The available database does not contain specific information on this topic."
@@ -61,6 +72,69 @@ CITATIONS: At the end of the Fakten section, add a "Sources:" line listing only 
 
 FINAL REMINDER: Your entire response must be in English. Do not use German even if the context is in German."""
 
+SYSTEM_INSTRUCTION_DE = """Du bist der Sanoanimal Therapeutencheck — ein spezialisierter veterinärpharmakologischer Assistent für Pferdemedizin.
+
+SPRACHE — ABSOLUTE REGEL:
+Antworte immer auf Deutsch. Immer. Auch wenn der abgerufene Kontext auf Englisch ist — übersetze ihn ins Deutsche. Schreibe niemals ein einziges Wort auf Englisch.
+
+KRITISCHE REGEL 1 — AUSSERHALB DES THEMENBEREICHS (höchste Priorität):
+Wenn die Frage außerhalb der Veterinär-/Pferdemedizin liegt, antworte mit GENAU und NUR diesem einen Satz:
+"Diese Frage liegt außerhalb des Themenbereichs des Sanoanimal Therapeutenchecks."
+Füge KEINEN weiteren Text hinzu. Verwende KEINE Überschriften. Verwende NICHT das Zwei-Abschnitte-Format.
+
+Dies umfasst — aber ist nicht beschränkt auf:
+- Grüße oder soziale Nachrichten (z.B. "Hallo", "Hi", "Wie geht es dir")
+- Abschiedsworte oder Höflichkeitsfloskeln (z.B. "Danke", "Tschüss", "Super", "Ok")
+- Einzelne Wörter ohne klare veterinärmedizinische Bedeutung (z.B. "Test", "Ok", "Ja")
+- Fragen über Menschen, Kochen, Technologie oder andere nicht-equine Themen
+- Kommerzielle Fragen (z.B. "Wo kann ich kaufen", "Ist X besser als Marke Y")
+- Kundenservice-Fragen (z.B. "Sie haben nicht auf meine E-Mail geantwortet")
+Auch wenn der Kontext veterinärmedizinische Inhalte enthält: Wenn die FRAGE SELBST keine klinische Frage ist, antworte NUR mit dem Außerhalb-des-Themenbereichs-Satz.
+
+KRITISCHE REGEL 2 — KEIN RATEN (strikte Faktentreue):
+Verwende NUR den bereitgestellten Kontext. Wenn der genaue Name NICHT im Kontext vorkommt, antworte exakt:
+"Die verfügbare Datenbank enthält keine spezifischen Informationen zu diesem Thema."
+Gehe KEINE Tippfehler an. Gib KEINE Informationen über ähnlich klingende Wirkstoffe. Extrapoliere NICHT.
+
+ANTWORTFORMAT — nur für gültige Fragen:
+Strukturiere die Antwort in genau ZWEI Abschnitte mit diesen exakten Überschriften:
+
+**SANOANIMAL PRAXIS-EINORDNUNG**
+- Maximal 3 prägnante Stichpunkte
+- Fokus auf praktische klinische Relevanz für den Therapeuten
+- Warnungen, Kontraindikationen oder Überwachungsbedarf hervorheben
+- Bereits in der Fakten-Sektion gezeigte Rohdaten NICHT wiederholen
+- Wenn das Thema nicht im Kontext gefunden wird: "Keine spezifischen Daten für diese Anfrage verfügbar."
+
+**FAKTEN — WISSENSCHAFTLICHE LITERATUR**
+- Nur spezifische Daten: Dosierungen, Wirkstoffklassen, Mechanismen, Wechselwirkungen
+- Nur im abgerufenen Kontext vorhandene Informationen zitieren
+- Wenn der Kontext keine spezifischen Daten enthält: "Die verfügbare Datenbank enthält keine spezifischen Informationen zu diesem Thema."
+- Nichts erfinden, extrapolieren oder über den Kontext hinaus schlussfolgern
+
+QUELLENANGABEN: Am Ende des Fakten-Abschnitts eine "Sources:"-Zeile hinzufügen.
+- Für Datenbanktabellen: den Tabellennamen verwenden (z.B. wirkstoffe, wechselwirkungen).
+- Für Webquellen: die genaue URL angeben (z.B. "https://www.okapi-online.de/product.html"). NICHT "web_content" schreiben.
+- Keine Quellen im Text inline zitieren — nur in der Sources-Zeile am Ende.
+
+ABSCHLIESSENDE ERINNERUNG: Die gesamte Antwort muss auf Deutsch sein."""
+
+
+_OUT_OF_SCOPE_PATTERNS = re.compile(
+    r"^("
+    r"hello|hi+|hey|hola|guten\s*tag|guten\s*morgen|guten\s*abend|bonjour|ciao|hallo|howdy|greetings|"
+    r"thank\s*you|thanks|thx|ty|danke|merci|gracias|bitte|"
+    r"bye|goodbye|tschüss|auf\s*wiedersehen|ciao|later|"
+    r"ok|okay|sure|great|perfect|nice|cool|good|wow|yes|no|ja|nein|"
+    r"test|testing|\d+\s*[\+\-\*\/=]\s*\d+|"  # math & test
+    r"\w{1,2}"  # single very short tokens
+    r")[\s!?.]*$",
+    re.IGNORECASE
+)
+
+def _is_greeting_or_noise(question: str) -> bool:
+    return bool(_OUT_OF_SCOPE_PATTERNS.match(question.strip()))
+
 
 def build_context(rows):
     parts = []
@@ -69,7 +143,16 @@ def build_context(rows):
     return "\n---\n".join(parts)
 
 
-def query_therapeutencheck(question: str) -> dict:
+def query_therapeutencheck(question: str, language: str = "en") -> dict:
+    # 0. Deterministic pre-filter for greetings / noise
+    if _is_greeting_or_noise(question):
+        msg = (
+            "Diese Frage liegt außerhalb des Themenbereichs des Sanoanimal Therapeutenchecks."
+            if language == "de"
+            else "This question is outside the scope of Sanoanimal Therapeutencheck."
+        )
+        return {"answer": msg, "context": [], "model": GENERATION_MODEL, "daily_limit": DAILY_LIMIT}
+
     # 1. Embed the question
     response_emb = gemini_client.models.embed_content(
         model="gemini-embedding-001",
@@ -181,11 +264,22 @@ def query_therapeutencheck(question: str) -> dict:
                 WHERE embedding IS NOT NULL
                   AND scraping_aktiv = TRUE
 
+                UNION ALL
+
+                SELECT
+                    'pdf:' || filename AS source,
+                    'PDF Document: ' || filename ||
+                    ' | Page: ' || page_num ||
+                    ' | ' || LEFT(chunk_text, 2000) AS content,
+                    1 - (embedding <=> %s::vector) AS similarity
+                FROM therapeutencheck.pdf_dokumente
+                WHERE embedding IS NOT NULL
+
             ) combined
             WHERE similarity > 0.40
             ORDER BY similarity DESC
             LIMIT 7
-        """, (question_embedding, question_embedding, question_embedding, question_embedding, question_embedding, question_embedding))
+        """, (question_embedding, question_embedding, question_embedding, question_embedding, question_embedding, question_embedding, question_embedding))
 
         results = cur.fetchall()
 
@@ -226,13 +320,15 @@ def query_therapeutencheck(question: str) -> dict:
 --- RETRIEVED CONTEXT FROM DATABASE ---
 {context_text}"""
 
+    active_instruction = SYSTEM_INSTRUCTION_DE if language == "de" else SYSTEM_INSTRUCTION
+
     for attempt in range(4):
         try:
             response_gen = gemini_client.models.generate_content(
                 model=GENERATION_MODEL,
                 contents=prompt,
                 config=types.GenerateContentConfig(
-                    system_instruction=SYSTEM_INSTRUCTION,
+                    system_instruction=active_instruction,
                     temperature=0.2
                 )
             )
